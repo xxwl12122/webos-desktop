@@ -7,7 +7,7 @@ export const PRESET_WALLPAPERS = [
   'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2560&q=85', // 纯黑微流体暗黑质感
 ];
 
-export const STORAGE_KEY = 'aether_webos_win_v5';
+export const STORAGE_KEY = 'aether_webos_win_v6';
 
 export const DEFAULT_STATE: SystemState = {
   wallpaper: PRESET_WALLPAPERS[0],
@@ -88,7 +88,7 @@ export const DEFAULT_STATE: SystemState = {
     taskmanager: {
       id: 'taskmanager',
       title: '任务管理器 (Task Manager)',
-      isOpen: true,
+      isOpen: false,
       isMinimized: false,
       isMaximized: false,
       snapMode: 'none',
