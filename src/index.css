@@ -10,6 +10,8 @@
     overflow: hidden;
     user-select: none;
     -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 }
 
@@ -19,6 +21,15 @@
 
 input, textarea, [contenteditable="true"] {
   user-select: text;
+}
+
+/* 隐藏横向滚动条类 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* 细腻极客滚动条 */
@@ -46,14 +57,6 @@ input, textarea, [contenteditable="true"] {
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.glass-dock {
-  background: rgba(15, 15, 18, 0.78);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
-}
-
 /* 活动窗口微发光与层级凸显 */
 .active-window {
   border-color: rgba(255, 255, 255, 0.16) !important;
@@ -73,14 +76,6 @@ body.is-resizing iframe {
   transition: none !important;
 }
 
-/* Dock 动画 */
-.dock-item {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.dock-item:hover {
-  transform: scale(1.18) translateY(-5px);
-}
-
 /* 边缘吸附虚线占位框动画 */
 .snap-preview {
   position: absolute;
@@ -97,7 +92,8 @@ body.is-resizing iframe {
 .resize-handle {
   position: absolute;
   z-index: 50;
+  touch-action: none;
 }
-.resize-handle-r { right: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
-.resize-handle-b { left: 0; right: 0; bottom: 0; height: 6px; cursor: ns-resize; }
-.resize-handle-rb { right: 0; bottom: 0; width: 14px; height: 14px; cursor: nwse-resize; }
+.resize-handle-r { right: 0; top: 0; bottom: 0; width: 8px; cursor: ew-resize; }
+.resize-handle-b { left: 0; right: 0; bottom: 0; height: 8px; cursor: ns-resize; }
+.resize-handle-rb { right: 0; bottom: 0; width: 16px; height: 16px; cursor: nwse-resize; }

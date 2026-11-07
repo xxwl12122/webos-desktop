@@ -101,7 +101,7 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
       </div>
 
       {/* 2. 中间【正在运行的窗口标签栏】 */}
-      <div className="flex-1 flex items-center space-x-1 px-2 overflow-x-auto">
+      <div className="flex-1 flex items-center space-x-1 px-1 sm:px-2 overflow-x-auto no-scrollbar">
         {openedWindows.map((id) => {
           const win = windows[id];
           const isActive = activeWindowId === id && !win.isMinimized;
@@ -110,7 +110,7 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
             <button
               key={id}
               onClick={() => onTaskClick(id)}
-              className={`h-9 px-3 rounded-lg max-w-[180px] flex items-center space-x-2 transition-all border-b-2 text-xs truncate ${
+              className={`h-9 px-2 sm:px-3 rounded-lg max-w-[110px] sm:max-w-[180px] shrink-0 sm:shrink flex items-center space-x-1.5 sm:space-x-2 transition-all border-b-2 text-xs truncate ${
                 isActive
                   ? 'bg-white/[0.08] text-zinc-100 border-blue-500 shadow-sm'
                   : 'bg-transparent hover:bg-white/[0.05] text-zinc-400 hover:text-zinc-200 border-transparent'
@@ -141,13 +141,13 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
         {/* Windows 经典双行时间日期按钮 */}
         <button
           onClick={onToggleCalendar}
-          className={`h-9 px-2.5 rounded-lg flex flex-col items-end justify-center transition-colors font-mono leading-tight text-right ${
+          className={`h-9 px-2 sm:px-2.5 rounded-lg flex flex-col items-end justify-center transition-colors font-mono leading-tight text-right ${
             isCalendarOpen ? 'bg-white/15 text-zinc-100' : 'hover:bg-white/[0.08] text-zinc-300 hover:text-white'
           }`}
           title="点击查看日历小组件"
         >
           <span className="text-[11px] font-medium tracking-tight text-zinc-200">{timeStr}</span>
-          <span className="text-[10px] text-zinc-400">{dateStr}</span>
+          <span className="text-[10px] text-zinc-400 hidden xs:inline sm:inline">{dateStr}</span>
         </button>
       </div>
 

@@ -35,7 +35,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#09090b] p-5 overflow-y-auto space-y-6 text-xs text-zinc-300">
+    <div className="flex flex-col h-full bg-[#09090b] p-3.5 sm:p-5 overflow-y-auto space-y-4 sm:space-y-6 text-xs text-zinc-300">
       {/* 1. 桌面壁纸与视觉通透度调节 */}
       <section className="space-y-3">
         <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
@@ -43,9 +43,10 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({
             <ImageIcon className="w-4 h-4 text-zinc-400" />
             <span>壁纸偏好</span>
           </h3>
-          <label className="cursor-pointer px-3 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-zinc-300 hover:text-white transition-colors font-medium flex items-center space-x-1.5">
+          <label className="cursor-pointer px-2.5 sm:px-3 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-zinc-300 hover:text-white transition-colors font-medium flex items-center space-x-1.5 shrink-0">
             <Upload className="w-3.5 h-3.5" />
-            <span>上传自定义壁纸</span>
+            <span className="hidden sm:inline">上传自定义壁纸</span>
+            <span className="sm:hidden">上传壁纸</span>
             <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
           </label>
         </div>

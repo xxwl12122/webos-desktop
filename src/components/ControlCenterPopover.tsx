@@ -34,7 +34,7 @@ export const ControlCenterPopover: React.FC<ControlCenterPopoverProps> = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute bottom-14 right-24 z-[99999] w-80 rounded-2xl bg-zinc-950/90 border border-white/10 p-4 shadow-2xl backdrop-blur-2xl text-xs text-zinc-200 animate-in fade-in slide-in-from-bottom-2 duration-150 select-none space-y-4"
+      className="absolute bottom-14 right-2 sm:right-20 z-[99999] w-[calc(100vw-16px)] sm:w-80 max-w-[340px] rounded-2xl bg-zinc-950/90 border border-white/10 p-3.5 sm:p-4 shadow-2xl backdrop-blur-2xl text-xs text-zinc-200 animate-in fade-in slide-in-from-bottom-2 duration-150 select-none space-y-3 sm:space-y-4"
     >
       <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
         <span className="font-semibold text-sm text-zinc-100">控制中心</span>

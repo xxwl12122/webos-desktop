@@ -289,17 +289,17 @@ export const App: React.FC = () => {
         className="absolute inset-0 pointer-events-none z-[1] transition-colors duration-200"
       />
 
-      {/* 2. 桌面图标网格 (纯净桌面，已彻底移除右上角时钟遮挡) */}
-      <main className="absolute inset-0 pt-6 pb-16 px-6 z-10 flex flex-col flex-wrap items-start content-start gap-3">
+      {/* 2. 桌面图标网格 (小屏与移动端响应式，纯净桌面无遮挡) */}
+      <main className="absolute inset-0 pt-3 sm:pt-6 pb-16 px-3 sm:px-6 z-10 flex flex-col flex-wrap items-start content-start gap-1 sm:gap-3">
         {/* Web 浏览器 */}
         <div
           onClick={() => openApp('browser')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Globe className="w-5 h-5 text-blue-400" />
           </div>
-          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-[11px] sm:text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             Web 浏览器
           </span>
         </div>
@@ -307,12 +307,12 @@ export const App: React.FC = () => {
         {/* 任务管理器 (Windows 风格) */}
         <div
           onClick={() => openApp('taskmanager')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Activity className="w-5 h-5 text-blue-500" />
           </div>
-          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-[11px] sm:text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             任务管理器
           </span>
         </div>
@@ -320,12 +320,12 @@ export const App: React.FC = () => {
         {/* Cyber Terminal */}
         <div
           onClick={() => openApp('terminal')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Terminal className="w-5 h-5 text-emerald-400" />
           </div>
-          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-[11px] sm:text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             极客终端
           </span>
         </div>
@@ -333,12 +333,12 @@ export const App: React.FC = () => {
         {/* Notepad Pro */}
         <div
           onClick={() => openApp('notepad')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <FileText className="w-5 h-5 text-amber-400" />
           </div>
-          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-[11px] sm:text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             知识便签
           </span>
         </div>
@@ -346,12 +346,12 @@ export const App: React.FC = () => {
         {/* Lo-Fi Player */}
         <div
           onClick={() => openApp('player')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Music className="w-5 h-5 text-cyan-400" />
           </div>
-          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-[11px] sm:text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             音频电台
           </span>
         </div>
@@ -359,12 +359,12 @@ export const App: React.FC = () => {
         {/* AI Studio */}
         <div
           onClick={() => openApp('aistudio')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Sparkles className="w-5 h-5 text-purple-400" />
           </div>
-          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-[11px] sm:text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             AI 工作舱
           </span>
         </div>
@@ -372,12 +372,12 @@ export const App: React.FC = () => {
         {/* Settings */}
         <div
           onClick={() => openApp('settings')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <SettingsIcon className="w-5 h-5 text-zinc-400" />
           </div>
-          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-[11px] sm:text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             系统设置
           </span>
         </div>

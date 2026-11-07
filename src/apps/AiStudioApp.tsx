@@ -310,7 +310,7 @@ export const AiStudioApp: React.FC<AiStudioAppProps> = ({ config, onUpdateConfig
             <span className="text-[10px] text-zinc-400 font-normal">支持 DeepSeek / Ollama / OpenAI</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label className="text-[10px] text-zinc-400 block mb-1">Base URL</label>
               <input

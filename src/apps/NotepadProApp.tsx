@@ -10,7 +10,7 @@ type ViewMode = 'split' | 'edit' | 'preview';
 
 export const NotepadProApp: React.FC<NotepadProAppProps> = ({ content, onUpdateContent }) => {
   const [text, setText] = useState(content);
-  const [viewMode, setViewMode] = useState<ViewMode>('split');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => (typeof window !== 'undefined' && window.innerWidth < 768 ? 'edit' : 'split'));
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -242,23 +242,23 @@ export const NotepadProApp: React.FC<NotepadProAppProps> = ({ content, onUpdateC
         </div>
       </div>
 
-      {/* 主工作区 */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* 主工作区 (移动端小屏上下分屏，大屏左右分屏) */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* 编辑区 */}
         {(viewMode === 'edit' || viewMode === 'split') && (
-          <div className={`h-full flex flex-col ${viewMode === 'split' ? 'w-1/2 border-r border-zinc-800/80' : 'w-full'}`}>
+          <div className={`flex flex-col ${viewMode === 'split' ? 'h-1/2 md:h-full w-full md:w-1/2 border-b md:border-b-0 md:border-r border-zinc-800/80' : 'w-full h-full'}`}>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="# 开始记录你的极客灵感与架构设计..."
-              className="w-full flex-1 bg-transparent p-4 text-xs font-mono text-zinc-200 outline-none resize-none leading-relaxed placeholder-zinc-600 selection:bg-zinc-700 selection:text-white"
+              className="w-full flex-1 bg-transparent p-3 sm:p-4 text-xs font-mono text-zinc-200 outline-none resize-none leading-relaxed placeholder-zinc-600 selection:bg-zinc-700 selection:text-white"
             />
           </div>
         )}
 
         {/* 预览区 */}
         {(viewMode === 'preview' || viewMode === 'split') && (
-          <div className={`h-full p-4 overflow-y-auto bg-zinc-950/40 select-text ${viewMode === 'split' ? 'w-1/2' : 'w-full'}`}>
+          <div className={`p-3 sm:p-4 overflow-y-auto bg-zinc-950/40 select-text ${viewMode === 'split' ? 'h-1/2 md:h-full w-full md:w-1/2' : 'w-full h-full'}`}>
             {renderMarkdown(text)}
           </div>
         )}

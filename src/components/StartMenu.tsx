@@ -86,7 +86,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute bottom-14 left-3 z-[99999] w-[440px] rounded-2xl bg-zinc-950/90 border border-white/10 shadow-2xl backdrop-blur-2xl text-xs text-zinc-200 animate-in fade-in slide-in-from-bottom-2 duration-150 flex flex-col overflow-hidden select-none"
+      className="absolute bottom-14 left-2 right-2 sm:right-auto sm:left-3 z-[99999] w-auto sm:w-[440px] max-w-[calc(100vw-16px)] rounded-2xl bg-zinc-950/90 border border-white/10 shadow-2xl backdrop-blur-2xl text-xs text-zinc-200 animate-in fade-in slide-in-from-bottom-2 duration-150 flex flex-col overflow-hidden select-none"
     >
       {/* 顶部搜索框 */}
       <div className="p-4 pb-2">
@@ -112,7 +112,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
       {/* 中部应用磁贴网格 */}
       <div className="px-4 py-2 flex-1">
         <div className="text-[11px] font-medium text-zinc-500 mb-2 px-1">已安装应用</div>
-        <div className="grid grid-cols-2 gap-2 max-h-[300px] overflow-y-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[50vh] sm:max-h-[300px] overflow-y-auto">
           {filtered.map((item) => (
             <div
               key={item.id}

@@ -154,11 +154,11 @@ export const Spotlight: React.FC<SpotlightProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-md flex items-start justify-center pt-[15vh] px-4 animate-in fade-in duration-150"
+      className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-md flex items-start justify-center pt-[8vh] sm:pt-[15vh] px-3 sm:px-4 animate-in fade-in duration-150"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-xl rounded-2xl bg-zinc-950/90 border border-white/10 shadow-2xl shadow-black/90 overflow-hidden flex flex-col divide-y divide-zinc-800/80"
+        className="w-full max-w-xl max-h-[84vh] rounded-2xl bg-zinc-950/90 border border-white/10 shadow-2xl shadow-black/90 overflow-hidden flex flex-col divide-y divide-zinc-800/80"
       >
         <div className="flex items-center px-4 py-3 space-x-3">
           <Search className="w-4 h-4 text-zinc-400 shrink-0" />
@@ -194,14 +194,14 @@ export const Spotlight: React.FC<SpotlightProps> = ({
                     isSelected ? 'bg-zinc-800/90 text-zinc-100' : 'text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800">{item.icon}</div>
-                    <div>
-                      <div className="text-xs font-medium text-zinc-200">{item.title}</div>
-                      <div className="text-[11px] text-zinc-400">{item.description}</div>
+                  <div className="flex items-center space-x-3 truncate">
+                    <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 shrink-0">{item.icon}</div>
+                    <div className="truncate">
+                      <div className="text-xs font-medium text-zinc-200 truncate">{item.title}</div>
+                      <div className="text-[11px] text-zinc-400 truncate">{item.description}</div>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 shrink-0 ml-2">
                     <span className="text-[10px] text-zinc-400 font-mono hidden sm:inline">{item.category}</span>
                     {isSelected && (
                       <kbd className="px-1.5 py-0.5 text-[10px] bg-zinc-700 text-zinc-200 rounded font-mono">
@@ -215,10 +215,10 @@ export const Spotlight: React.FC<SpotlightProps> = ({
           )}
         </div>
 
-        <div className="px-4 py-2 bg-zinc-900/60 flex items-center justify-between text-[11px] text-zinc-400 font-mono">
-          <div className="flex items-center space-x-3">
-            <span>↑↓ 切换选择</span>
-            <span>↵ 确认执行</span>
+        <div className="px-3 sm:px-4 py-2 bg-zinc-900/60 flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-400 font-mono">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <span>↑↓ 切换</span>
+            <span>↵ 确认</span>
           </div>
           <div>AetherOS Quick Command</div>
         </div>

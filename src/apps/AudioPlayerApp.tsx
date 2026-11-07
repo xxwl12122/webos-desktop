@@ -202,7 +202,7 @@ export const AudioPlayerApp: React.FC = () => {
         const file = e.dataTransfer.files[0];
         if (file) handleFileDrop(file);
       }}
-      className="flex flex-col h-full bg-[#0a0a0d] p-5 justify-between select-none relative overflow-hidden"
+      className="flex flex-col h-full bg-[#0a0a0d] p-3.5 sm:p-5 justify-between select-none relative overflow-hidden"
     >
       {/* 顶部曲目信息 */}
       <div className="flex items-center justify-between">

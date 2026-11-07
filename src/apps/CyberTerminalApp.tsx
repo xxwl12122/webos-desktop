@@ -327,7 +327,12 @@ export const CyberTerminalApp: React.FC = () => {
               <Sparkles className="w-3 h-3" />
               <span>THE MATRIX CODE STREAM</span>
             </span>
-            <span>按 <kbd className="px-1 py-0.5 bg-zinc-800 rounded text-zinc-200">Q</kbd> 退出字符雨</span>
+            <button
+              onClick={() => setIsMatrixRunning(false)}
+              className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[10px] transition-colors flex items-center space-x-1"
+            >
+              <span>退出 (Q)</span>
+            </button>
           </div>
           <canvas ref={canvasRef} className="flex-1 w-full h-full block" />
         </div>
