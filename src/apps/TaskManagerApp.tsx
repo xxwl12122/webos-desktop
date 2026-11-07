@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Activity, Cpu, Layers, HardDrive, Wifi, PowerOff, Play, Globe, Terminal, FileText, Music, Sparkles, Settings } from 'lucide-react';
+import { Activity, Cpu, Layers, HardDrive, Wifi, PowerOff, Play, Globe, Terminal, FileText, Music, Sparkles, Settings, ShieldAlert, ExternalLink, Copy, Check } from 'lucide-react';
 import { AppId, WindowState } from '../types';
 
 interface TaskManagerAppProps {
@@ -19,6 +19,12 @@ export const TaskManagerApp: React.FC<TaskManagerAppProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>('processes');
   const [selectedProcessId, setSelectedProcessId] = useState<AppId | 'kernel' | null>(null);
   const [activeMetric, setActiveMetric] = useState<PerfMetric>('cpu');
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    appId: AppId | 'kernel';
+  } | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // 模拟真实实时指标数据
   const [cpuUsage, setCpuUsage] = useState(18);
@@ -129,6 +135,46 @@ export const TaskManagerApp: React.FC<TaskManagerAppProps> = ({
     setSelectedProcessId(null);
   };
 
+  // 进程行右键菜单处理
+  const handleRowContextMenu = (e: React.MouseEvent, appId: AppId | 'kernel') => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedProcessId(appId);
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      appId,
+    });
+  };
+
+  // 全局关闭右键菜单与快捷键支持 (Delete 结束任务)
+  useEffect(() => {
+    const handleCloseMenu = () => setContextMenu(null);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setContextMenu(null);
+      } else if (e.key === 'Delete') {
+        if (selectedProcessId && selectedProcessId !== 'kernel' && windows[selectedProcessId]?.isOpen) {
+          onCloseApp(selectedProcessId);
+        }
+      }
+    };
+
+    window.addEventListener('click', handleCloseMenu);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('click', handleCloseMenu);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedProcessId, windows, onCloseApp]);
+
+  const handleCopyProcessName = (name: string, id: string) => {
+    navigator.clipboard.writeText(name);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 1500);
+  };
+
   const formatUptime = (totalSecs: number) => {
     const h = Math.floor(totalSecs / 3600);
     const m = Math.floor((totalSecs % 3600) / 60);
@@ -194,6 +240,7 @@ export const TaskManagerApp: React.FC<TaskManagerAppProps> = ({
             {/* 系统内核进程 (只读) */}
             <div
               onClick={() => setSelectedProcessId('kernel')}
+              onContextMenu={(e) => handleRowContextMenu(e, 'kernel')}
               className={`grid grid-cols-[1fr_75px_55px_65px] sm:grid-cols-[1fr_100px_90px_100px_90px] px-3 sm:px-4 py-2 text-xs items-center cursor-pointer transition-colors ${
                 selectedProcessId === 'kernel' ? 'bg-blue-600/20 border-l-2 border-blue-500' : 'hover:bg-zinc-900/50'
               }`}
@@ -223,6 +270,8 @@ export const TaskManagerApp: React.FC<TaskManagerAppProps> = ({
                 <div
                   key={appId}
                   onClick={() => setSelectedProcessId(appId)}
+                  onContextMenu={(e) => handleRowContextMenu(e, appId)}
+                  onDoubleClick={() => onOpenApp(appId)}
                   className={`grid grid-cols-[1fr_75px_55px_65px] sm:grid-cols-[1fr_100px_90px_100px_90px] px-3 sm:px-4 py-2 sm:py-2.5 text-xs items-center cursor-pointer transition-colors ${
                     isSelected ? 'bg-blue-600/20 border-l-2 border-blue-500' : 'hover:bg-zinc-900/50'
                   }`}
@@ -358,6 +407,96 @@ export const TaskManagerApp: React.FC<TaskManagerAppProps> = ({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 进程专属右键上下文菜单 (Windows 11 风格) */}
+      {contextMenu && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            left: `${Math.max(8, Math.min(contextMenu.x, window.innerWidth - 220))}px`,
+            top: `${Math.max(8, Math.min(contextMenu.y, window.innerHeight - 200))}px`,
+          }}
+          className="fixed z-[99999] w-52 rounded-xl bg-zinc-950/95 border border-white/10 p-1.5 shadow-2xl shadow-black/90 backdrop-blur-2xl text-xs text-zinc-300 divide-y divide-zinc-800/80 animate-in fade-in duration-100 select-none"
+        >
+          {contextMenu.appId === 'kernel' ? (
+            <div className="py-1 px-2.5 text-zinc-500 flex items-center space-x-2">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <div className="text-[11px] leading-tight">
+                <div>系统核心进程</div>
+                <div className="text-[10px] text-zinc-600">Windows 核心保护，无法终止</div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* 核心操作：结束任务 / 启动应用 */}
+              <div className="py-1">
+                {windows[contextMenu.appId]?.isOpen ? (
+                  <button
+                    onClick={() => {
+                      onCloseApp(contextMenu.appId as AppId);
+                      setContextMenu(null);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-lg text-rose-300 hover:text-white hover:bg-rose-600/80 flex items-center justify-between transition-colors font-medium cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <PowerOff className="w-3.5 h-3.5" />
+                      <span>结束任务 (End Task)</span>
+                    </div>
+                    <kbd className="text-[10px] font-mono opacity-70">Del</kbd>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      onOpenApp(contextMenu.appId as AppId);
+                      setContextMenu(null);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-emerald-600/80 flex items-center space-x-2 transition-colors font-medium cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5" />
+                    <span>启动应用 (Launch)</span>
+                  </button>
+                )}
+              </div>
+
+              {/* 切换至此应用 */}
+              {windows[contextMenu.appId]?.isOpen && (
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      onOpenApp(contextMenu.appId as AppId);
+                      setContextMenu(null);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white flex items-center space-x-2 transition-colors cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>切换至此窗口 (Switch To)</span>
+                  </button>
+                </div>
+              )}
+
+              {/* 复制进程名称 */}
+              <div className="py-1">
+                <button
+                  onClick={() => {
+                    const name = appMeta[contextMenu.appId as AppId]?.name || contextMenu.appId;
+                    handleCopyProcessName(name, contextMenu.appId);
+                    setContextMenu(null);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Copy className="w-3.5 h-3.5 text-zinc-400" />
+                    <span>复制进程名称</span>
+                  </div>
+                  {copiedId === contextMenu.appId && (
+                    <Check className="w-3 h-3 text-emerald-400" />
+                  )}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

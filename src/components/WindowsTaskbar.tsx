@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SlidersHorizontal, Wifi, WifiOff, Globe, Terminal, FileText, Music, Sparkles, Settings, Activity } from 'lucide-react';
+import { SlidersHorizontal, Wifi, WifiOff, Globe, Terminal, FileText, Music, Sparkles, Settings, Activity, Monitor, RotateCw } from 'lucide-react';
 import { AppId, WindowState } from '../types';
 import { getSyncedDate } from '../utils/timeSync';
 
@@ -14,6 +14,7 @@ interface WindowsTaskbarProps {
   onToggleControlCenter: () => void;
   onTaskClick: (id: AppId) => void;
   onOpenTaskManager: () => void;
+  onOpenSettings?: () => void;
   onMinimizeAll: () => void;
 }
 
@@ -28,6 +29,7 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
   onToggleControlCenter,
   onTaskClick,
   onOpenTaskManager,
+  onOpenSettings,
   onMinimizeAll,
 }) => {
   const [date, setDate] = useState<Date>(getSyncedDate);
@@ -41,13 +43,17 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
+    const handleWindowClick = () => setTaskbarContextMenu(null);
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('click', handleWindowClick);
 
     return () => {
       clearInterval(timer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('click', handleWindowClick);
     };
   }, []);
 
@@ -70,7 +76,7 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
   const handleTaskbarContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setTaskbarContextMenu({ x: e.clientX, y: e.clientY - 85 });
+    setTaskbarContextMenu({ x: e.clientX, y: e.clientY });
   };
 
   return (
@@ -151,11 +157,15 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
         </button>
       </div>
 
-      {/* 任务栏右键菜单 */}
+      {/* 任务栏专属右键菜单 (经典 Windows 11 风格) */}
       {taskbarContextMenu && (
         <div
-          style={{ left: `${Math.min(taskbarContextMenu.x, window.innerWidth - 180)}px`, top: `${taskbarContextMenu.y}px` }}
-          className="fixed z-[99999] w-48 rounded-xl bg-zinc-950/95 border border-white/10 py-1 shadow-2xl backdrop-blur-2xl text-xs text-zinc-300 divide-y divide-zinc-800"
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            left: `${Math.max(8, Math.min(taskbarContextMenu.x - 20, window.innerWidth - 220))}px`,
+            bottom: '52px',
+          }}
+          className="fixed z-[99999] w-52 rounded-xl bg-zinc-950/95 border border-white/10 p-1.5 shadow-2xl shadow-black/90 backdrop-blur-2xl text-xs text-zinc-300 divide-y divide-zinc-800/80 animate-in fade-in duration-100 select-none"
         >
           <div className="py-1">
             <button
@@ -163,24 +173,49 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
                 onOpenTaskManager();
                 setTaskbarContextMenu(null);
               }}
-              className="w-full text-left px-3.5 py-1.5 hover:bg-zinc-800 hover:text-white flex items-center justify-between transition-colors"
+              className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white flex items-center justify-between transition-colors group cursor-pointer"
             >
-              <div className="flex items-center space-x-2">
-                <Activity className="w-3.5 h-3.5 text-blue-400" />
-                <span>任务管理器</span>
+              <div className="flex items-center space-x-2.5">
+                <Activity className="w-4 h-4 text-blue-400 group-hover:scale-105 transition-transform" />
+                <span className="font-medium text-zinc-100">任务管理器</span>
               </div>
               <span className="text-[10px] text-zinc-500 font-mono">Ctrl+Shift+Esc</span>
             </button>
           </div>
-          <div className="py-1">
+
+          <div className="py-1 space-y-0.5">
             <button
               onClick={() => {
                 onMinimizeAll();
                 setTaskbarContextMenu(null);
               }}
-              className="w-full text-left px-3.5 py-1.5 hover:bg-zinc-800 hover:text-white transition-colors"
+              className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
             >
-              显示桌面 (最小化全部)
+              <Monitor className="w-3.5 h-3.5 text-zinc-400" />
+              <span>显示桌面</span>
+            </button>
+
+            {onOpenSettings && (
+              <button
+                onClick={() => {
+                  onOpenSettings();
+                  setTaskbarContextMenu(null);
+                }}
+                className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+              >
+                <Settings className="w-3.5 h-3.5 text-zinc-400" />
+                <span>任务栏与系统设置</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                window.location.reload();
+              }}
+              className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+            >
+              <RotateCw className="w-3.5 h-3.5 text-zinc-400" />
+              <span>重启桌面环境</span>
             </button>
           </div>
         </div>

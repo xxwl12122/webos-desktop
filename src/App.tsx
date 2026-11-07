@@ -72,10 +72,14 @@ export const App: React.FC = () => {
     bringToFront(id);
   }, [bringToFront]);
 
-  // 全局屏蔽原生右键菜单
+  // 全局屏蔽原生右键菜单 (仅在桌面空白处弹出全局菜单，任务栏与窗口内部由其自身右键接管)
   useEffect(() => {
     const handleGlobalContextMenu = (e: MouseEvent) => {
       e.preventDefault();
+      const target = e.target as HTMLElement;
+      if (target.closest('footer') || target.closest('.glass-panel')) {
+        return;
+      }
       const x = Math.min(e.clientX, window.innerWidth - 210);
       const y = Math.min(e.clientY, window.innerHeight - 240);
       setContextMenu({ x, y });
@@ -563,6 +567,7 @@ export const App: React.FC = () => {
         }}
         onTaskClick={handleTaskClick}
         onOpenTaskManager={() => openApp('taskmanager')}
+        onOpenSettings={() => openApp('settings')}
         onMinimizeAll={minimizeAll}
       />
 
