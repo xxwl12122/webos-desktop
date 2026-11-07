@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  user-select: none;
+  -webkit-user-drag: none;
+  box-sizing: border-box;
+}
+
+input, textarea, [contenteditable="true"] {
+  user-select: text;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.glass-panel {
+  background: rgba(20, 24, 39, 0.78);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-dock {
+  background: rgba(15, 18, 30, 0.75);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.active-window {
+  border-color: rgba(59, 130, 246, 0.5) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 18px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* 拖拽或缩放时的全局防断触遮罩 */
+body.is-dragging iframe,
+body.is-resizing iframe {
+  pointer-events: none !important;
+}
+
+.window-anim {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, width 0.2s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s cubic-bezier(0.16, 1, 0.3, 1), top 0.2s cubic-bezier(0.16, 1, 0.3, 1), left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.is-moving {
+  transition: none !important;
+}
+
+.dock-item {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.dock-item:hover {
+  transform: scale(1.22) translateY(-6px);
+}
