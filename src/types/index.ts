@@ -1,4 +1,4 @@
-export type AppId = 'browser' | 'terminal' | 'notepad' | 'player' | 'aistudio' | 'settings';
+export type AppId = 'browser' | 'terminal' | 'notepad' | 'player' | 'aistudio' | 'taskmanager' | 'settings';
 
 export type SnapMode = 'none' | 'left' | 'right' | 'maximize';
 
@@ -31,8 +31,8 @@ export interface AiStudioConfig {
 export interface SystemState {
   wallpaper: string;
   brightness: number;               // 50% - 120%, 默认 100
-  wallpaperOverlayOpacity: number;  // 0% - 80%, 默认 15
-  systemVolume: number;             // 0 - 100, 默认 75
+  wallpaperOverlayOpacity: number;  // 0% - 80%, 默认 12
+  systemVolume: number;             // 0 - 100, 默认 80
   windows: Record<AppId, WindowState>;
   notepadContent: string;
   aiConfig: AiStudioConfig;

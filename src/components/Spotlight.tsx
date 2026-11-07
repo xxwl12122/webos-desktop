@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Globe, Terminal, FileText, Music, Sparkles, Settings, Maximize, RotateCw, Image as ImageIcon } from 'lucide-react';
+import { Search, Globe, Terminal, FileText, Music, Sparkles, Settings, Activity, Maximize, RotateCw, Image as ImageIcon } from 'lucide-react';
 import { AppId } from '../types';
 
 interface SpotlightProps {
@@ -31,6 +31,14 @@ export const Spotlight: React.FC<SpotlightProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const commands: CommandItem[] = [
+    {
+      id: 'app-taskmanager',
+      title: '任务管理器 (Task Manager)',
+      description: '查看进程状态、结束无响应任务与性能监控 (Ctrl+Shift+Esc)',
+      icon: <Activity className="w-4 h-4 text-blue-500" />,
+      category: 'System Tools',
+      action: () => onOpenApp('taskmanager'),
+    },
     {
       id: 'app-browser',
       title: 'Web 浏览器 (Pro)',

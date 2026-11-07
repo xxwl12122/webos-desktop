@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Globe, Terminal, FileText, Music, Sparkles, Settings as SettingsIcon } from 'lucide-react';
+import { Globe, Terminal, FileText, Music, Sparkles, Settings as SettingsIcon, Activity } from 'lucide-react';
 import { AppId, SystemState, SnapMode, AiStudioConfig } from './types';
 import { loadSavedState, saveSystemState, PRESET_WALLPAPERS, DEFAULT_STATE } from './utils/storage';
 import { syncNetworkTime } from './utils/timeSync';
@@ -7,7 +7,6 @@ import { WindowsTaskbar } from './components/WindowsTaskbar';
 import { StartMenu } from './components/StartMenu';
 import { CalendarPopover } from './components/CalendarPopover';
 import { ControlCenterPopover } from './components/ControlCenterPopover';
-import { DesktopClockWidget } from './components/DesktopClockWidget';
 import { ContextMenu } from './components/ContextMenu';
 import { WindowFrame } from './components/WindowFrame';
 import { Spotlight } from './components/Spotlight';
@@ -16,11 +15,20 @@ import { CyberTerminalApp } from './apps/CyberTerminalApp';
 import { NotepadProApp } from './apps/NotepadProApp';
 import { AudioPlayerApp } from './apps/AudioPlayerApp';
 import { AiStudioApp } from './apps/AiStudioApp';
+import { TaskManagerApp } from './apps/TaskManagerApp';
 import { SettingsApp } from './apps/SettingsApp';
 
 export const App: React.FC = () => {
   const [systemState, setSystemState] = useState<SystemState>(loadSavedState);
-  const [windowStack, setWindowStack] = useState<AppId[]>(['terminal', 'browser', 'notepad', 'player', 'aistudio', 'settings']);
+  const [windowStack, setWindowStack] = useState<AppId[]>([
+    'terminal',
+    'browser',
+    'notepad',
+    'player',
+    'aistudio',
+    'taskmanager',
+    'settings',
+  ]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
   const [isStartOpen, setIsStartOpen] = useState(false);
@@ -38,35 +46,7 @@ export const App: React.FC = () => {
     saveSystemState(systemState);
   }, [systemState]);
 
-  // 全局屏蔽原生右键菜单
-  useEffect(() => {
-    const handleGlobalContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      const x = Math.min(e.clientX, window.innerWidth - 210);
-      const y = Math.min(e.clientY, window.innerHeight - 240);
-      setContextMenu({ x, y });
-      setIsStartOpen(false);
-      setIsCalendarOpen(false);
-      setIsControlCenterOpen(false);
-    };
-
-    window.addEventListener('contextmenu', handleGlobalContextMenu);
-    return () => window.removeEventListener('contextmenu', handleGlobalContextMenu);
-  }, []);
-
-  // 全局 ⌘K / Ctrl+K 唤起 Spotlight
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        setIsSpotlightOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // 窗口置顶调度器 (数组栈管理器)
+  // 打开/还原窗口
   const bringToFront = useCallback((id: AppId) => {
     setWindowStack((prev) => {
       const filtered = prev.filter((item) => item !== id);
@@ -74,7 +54,6 @@ export const App: React.FC = () => {
     });
   }, []);
 
-  // 打开/还原窗口
   const openApp = useCallback((id: AppId) => {
     setSystemState((prev) => {
       const current = prev.windows[id];
@@ -92,6 +71,37 @@ export const App: React.FC = () => {
     });
     bringToFront(id);
   }, [bringToFront]);
+
+  // 全局屏蔽原生右键菜单
+  useEffect(() => {
+    const handleGlobalContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      const x = Math.min(e.clientX, window.innerWidth - 210);
+      const y = Math.min(e.clientY, window.innerHeight - 240);
+      setContextMenu({ x, y });
+      setIsStartOpen(false);
+      setIsCalendarOpen(false);
+      setIsControlCenterOpen(false);
+    };
+
+    window.addEventListener('contextmenu', handleGlobalContextMenu);
+    return () => window.removeEventListener('contextmenu', handleGlobalContextMenu);
+  }, []);
+
+  // 全局快捷键监听 (⌘K / Ctrl+K 搜索，Ctrl+Shift+Esc 任务管理器)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSpotlightOpen((prev) => !prev);
+      } else if (e.ctrlKey && e.shiftKey && e.key === 'Escape') {
+        e.preventDefault();
+        openApp('taskmanager');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openApp]);
 
   // 关闭窗口
   const closeApp = useCallback((id: AppId) => {
@@ -120,6 +130,19 @@ export const App: React.FC = () => {
         },
       },
     }));
+  }, []);
+
+  // 显示桌面 (最小化全部)
+  const minimizeAll = useCallback(() => {
+    setSystemState((prev) => {
+      const nextWin = { ...prev.windows };
+      (Object.keys(nextWin) as AppId[]).forEach((id) => {
+        if (nextWin[id].isOpen) {
+          nextWin[id] = { ...nextWin[id], isMinimized: true };
+        }
+      });
+      return { ...prev, windows: nextWin };
+    });
   }, []);
 
   // 最大化/还原切换
@@ -219,7 +242,7 @@ export const App: React.FC = () => {
   // 重置系统
   const handleResetSystem = () => {
     setSystemState(DEFAULT_STATE);
-    setWindowStack(['terminal', 'browser', 'notepad', 'player', 'aistudio', 'settings']);
+    setWindowStack(['terminal', 'browser', 'notepad', 'player', 'aistudio', 'taskmanager', 'settings']);
     localStorage.clear();
     window.location.reload();
   };
@@ -266,10 +289,7 @@ export const App: React.FC = () => {
         className="absolute inset-0 pointer-events-none z-[1] transition-colors duration-200"
       />
 
-      {/* 2. 桌面醒目大时钟小组件 (Desktop Clock Widget) */}
-      <DesktopClockWidget />
-
-      {/* 3. 桌面图标网格 */}
+      {/* 2. 桌面图标网格 (纯净桌面，已彻底移除右上角时钟遮挡) */}
       <main className="absolute inset-0 pt-6 pb-16 px-6 z-10 flex flex-col flex-wrap items-start content-start gap-3">
         {/* Web 浏览器 */}
         <div
@@ -281,6 +301,19 @@ export const App: React.FC = () => {
           </div>
           <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             Web 浏览器
+          </span>
+        </div>
+
+        {/* 任务管理器 (Windows 风格) */}
+        <div
+          onClick={() => openApp('taskmanager')}
+          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+        >
+          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+            <Activity className="w-5 h-5 text-blue-500" />
+          </div>
+          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+            任务管理器
           </span>
         </div>
 
@@ -350,13 +383,35 @@ export const App: React.FC = () => {
         </div>
       </main>
 
-      {/* 4. Snap Assist 边缘吸附虚线占位框 */}
+      {/* 3. Snap Assist 边缘吸附虚线占位框 */}
       {snapPreview && (
         <div style={getSnapPreviewStyle() || {}} className="snap-preview" />
       )}
 
-      {/* 5. 窗口集合 (Z-Index Stack 管理) */}
+      {/* 4. 窗口集合 (Z-Index Stack 管理) */}
       <div className="absolute inset-0 pointer-events-none z-20 pb-12">
+        {/* Task Manager (Windows 任务管理器) */}
+        <WindowFrame
+          window={systemState.windows.taskmanager}
+          icon={<Activity className="w-3.5 h-3.5 text-blue-500" />}
+          zIndex={BASE_Z_INDEX + windowStack.indexOf('taskmanager')}
+          isActive={activeWindowId === 'taskmanager'}
+          onFocus={() => bringToFront('taskmanager')}
+          onClose={() => closeApp('taskmanager')}
+          onMinimize={() => minimizeApp('taskmanager')}
+          onToggleMaximize={() => toggleMaximizeApp('taskmanager')}
+          onUpdatePosition={(x, y) => updatePosition('taskmanager', x, y)}
+          onUpdateSize={(w, h) => updateSize('taskmanager', w, h)}
+          onApplySnap={(mode) => applySnap('taskmanager', mode)}
+          onSetSnapPreview={setSnapPreview}
+        >
+          <TaskManagerApp
+            windows={systemState.windows}
+            onCloseApp={closeApp}
+            onOpenApp={openApp}
+          />
+        </WindowFrame>
+
         {/* Web Browser Pro */}
         <WindowFrame
           window={systemState.windows.browser}
@@ -484,7 +539,7 @@ export const App: React.FC = () => {
         </WindowFrame>
       </div>
 
-      {/* 6. Windows 风格置底任务栏 (Windows Taskbar 48px) */}
+      {/* 5. Windows 风格置底任务栏 (Windows Taskbar 48px) */}
       <WindowsTaskbar
         windows={systemState.windows}
         activeWindowId={activeWindowId}
@@ -507,9 +562,11 @@ export const App: React.FC = () => {
           setIsCalendarOpen(false);
         }}
         onTaskClick={handleTaskClick}
+        onOpenTaskManager={() => openApp('taskmanager')}
+        onMinimizeAll={minimizeAll}
       />
 
-      {/* 7. Windows 浮动开始菜单 (Start Menu) */}
+      {/* 6. Windows 浮动开始菜单 (Start Menu) */}
       <StartMenu
         isOpen={isStartOpen}
         onClose={() => setIsStartOpen(false)}
@@ -517,12 +574,12 @@ export const App: React.FC = () => {
         onResetSystem={handleResetSystem}
       />
 
-      {/* 8. Windows 11 风格悬浮毛玻璃月历面板 (Calendar Popover) */}
+      {/* 7. Windows 11 风格悬浮毛玻璃月历面板 (Calendar Popover) */}
       {isCalendarOpen && (
         <CalendarPopover onClose={() => setIsCalendarOpen(false)} />
       )}
 
-      {/* 9. 系统控制中心面板 (Control Center Popover) */}
+      {/* 8. 系统控制中心面板 (Control Center Popover) */}
       {isControlCenterOpen && (
         <ControlCenterPopover
           brightness={systemState.brightness}
@@ -535,7 +592,7 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 10. 全局 Spotlight 快速启动器 (⌘K / Ctrl+K) */}
+      {/* 9. 全局 Spotlight 快速启动器 (⌘K / Ctrl+K) */}
       <Spotlight
         isOpen={isSpotlightOpen}
         onClose={() => setIsSpotlightOpen(false)}
@@ -550,7 +607,7 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* 11. 全局右键上下文菜单 */}
+      {/* 10. 全局右键上下文菜单 */}
       {contextMenu && (
         <ContextMenu
           x={contextMenu.x}

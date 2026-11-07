@@ -7,12 +7,12 @@ export const PRESET_WALLPAPERS = [
   'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2560&q=85', // 纯黑微流体暗黑质感
 ];
 
-export const STORAGE_KEY = 'aether_webos_win_v4';
+export const STORAGE_KEY = 'aether_webos_win_v5';
 
 export const DEFAULT_STATE: SystemState = {
   wallpaper: PRESET_WALLPAPERS[0],
   brightness: 100,
-  wallpaperOverlayOpacity: 12, // 默认极微柔和蒙层 12%，保持极高通透度
+  wallpaperOverlayOpacity: 12,
   systemVolume: 80,
   windows: {
     browser: {
@@ -32,7 +32,7 @@ export const DEFAULT_STATE: SystemState = {
     terminal: {
       id: 'terminal',
       title: 'guest@webos: ~ (bash)',
-      isOpen: true,
+      isOpen: false,
       isMinimized: false,
       isMaximized: false,
       snapMode: 'none',
@@ -85,9 +85,23 @@ export const DEFAULT_STATE: SystemState = {
       minWidth: 440,
       minHeight: 360,
     },
+    taskmanager: {
+      id: 'taskmanager',
+      title: '任务管理器 (Task Manager)',
+      isOpen: true,
+      isMinimized: false,
+      isMaximized: false,
+      snapMode: 'none',
+      x: 180,
+      y: 80,
+      width: 680,
+      height: 490,
+      minWidth: 460,
+      minHeight: 320,
+    },
     settings: {
       id: 'settings',
-      title: 'System Preferences',
+      title: '系统偏好设置',
       isOpen: false,
       isMinimized: false,
       isMaximized: false,
@@ -106,16 +120,10 @@ export const DEFAULT_STATE: SystemState = {
 
 ### 核心特性
 - [x] Windows 风格全宽底部任务栏与开始菜单
-- [x] 桌面大时钟小组件与 Windows 11 日历面板
+- [x] 纯正 Windows 任务管理器 (进程管理与性能监控)
+- [x] 快捷键 Ctrl+Shift+Esc 快速唤出任务管理器
 - [x] 联网自动校准时间系统（带离线自增保护）
 - [x] 原生内置生产级浏览器（带 CSP 安全容灾保护）
-- [x] 边缘吸附（Snap Assist: 拖到左/右/顶边缘自动半屏/全屏）
-- [x] 全局 Command / Ctrl + K 快捷启动
-
-\`\`\`bash
-# 启动终端运行 neofetch
-guest@webos:~$ neofetch
-\`\`\`
 `,
   aiConfig: {
     baseUrl: '',

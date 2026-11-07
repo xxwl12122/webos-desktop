@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SlidersHorizontal, Wifi, WifiOff, Globe, Terminal, FileText, Music, Sparkles, Settings } from 'lucide-react';
+import { SlidersHorizontal, Wifi, WifiOff, Globe, Terminal, FileText, Music, Sparkles, Settings, Activity } from 'lucide-react';
 import { AppId, WindowState } from '../types';
 import { getSyncedDate } from '../utils/timeSync';
 
@@ -13,6 +13,8 @@ interface WindowsTaskbarProps {
   isControlCenterOpen: boolean;
   onToggleControlCenter: () => void;
   onTaskClick: (id: AppId) => void;
+  onOpenTaskManager: () => void;
+  onMinimizeAll: () => void;
 }
 
 export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
@@ -25,9 +27,12 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
   isControlCenterOpen,
   onToggleControlCenter,
   onTaskClick,
+  onOpenTaskManager,
+  onMinimizeAll,
 }) => {
   const [date, setDate] = useState<Date>(getSyncedDate);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [taskbarContextMenu, setTaskbarContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,13 +60,25 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
     notepad: <FileText className="w-4 h-4 text-amber-400" />,
     player: <Music className="w-4 h-4 text-cyan-400" />,
     aistudio: <Sparkles className="w-4 h-4 text-purple-400" />,
+    taskmanager: <Activity className="w-4 h-4 text-blue-500" />,
     settings: <Settings className="w-4 h-4 text-zinc-400" />,
   };
 
   const openedWindows = (Object.keys(windows) as AppId[]).filter((id) => windows[id].isOpen);
 
+  // 任务栏右键菜单 (经典 Windows 行为)
+  const handleTaskbarContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setTaskbarContextMenu({ x: e.clientX, y: e.clientY - 85 });
+  };
+
   return (
-    <footer className="absolute bottom-0 left-0 right-0 h-12 w-full bg-zinc-950/85 backdrop-blur-2xl border-t border-white/[0.08] z-[9990] flex items-center justify-between px-2 select-none">
+    <footer
+      onContextMenu={handleTaskbarContextMenu}
+      onClick={() => taskbarContextMenu && setTaskbarContextMenu(null)}
+      className="absolute bottom-0 left-0 right-0 h-12 w-full bg-zinc-950/85 backdrop-blur-2xl border-t border-white/[0.08] z-[9990] flex items-center justify-between px-2 select-none"
+    >
       {/* 1. 左侧【开始菜单】按钮 */}
       <div className="flex items-center space-x-1.5 shrink-0">
         <button
@@ -133,6 +150,41 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
           <span className="text-[10px] text-zinc-400">{dateStr}</span>
         </button>
       </div>
+
+      {/* 任务栏右键菜单 */}
+      {taskbarContextMenu && (
+        <div
+          style={{ left: `${Math.min(taskbarContextMenu.x, window.innerWidth - 180)}px`, top: `${taskbarContextMenu.y}px` }}
+          className="fixed z-[99999] w-48 rounded-xl bg-zinc-950/95 border border-white/10 py-1 shadow-2xl backdrop-blur-2xl text-xs text-zinc-300 divide-y divide-zinc-800"
+        >
+          <div className="py-1">
+            <button
+              onClick={() => {
+                onOpenTaskManager();
+                setTaskbarContextMenu(null);
+              }}
+              className="w-full text-left px-3.5 py-1.5 hover:bg-zinc-800 hover:text-white flex items-center justify-between transition-colors"
+            >
+              <div className="flex items-center space-x-2">
+                <Activity className="w-3.5 h-3.5 text-blue-400" />
+                <span>任务管理器</span>
+              </div>
+              <span className="text-[10px] text-zinc-500 font-mono">Ctrl+Shift+Esc</span>
+            </button>
+          </div>
+          <div className="py-1">
+            <button
+              onClick={() => {
+                onMinimizeAll();
+                setTaskbarContextMenu(null);
+              }}
+              className="w-full text-left px-3.5 py-1.5 hover:bg-zinc-800 hover:text-white transition-colors"
+            >
+              显示桌面 (最小化全部)
+            </button>
+          </div>
+        </div>
+      )}
     </footer>
   );
 };

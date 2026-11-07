@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Globe, Terminal, FileText, Music, Sparkles, Settings, Power, User } from 'lucide-react';
+import { Search, Globe, Terminal, FileText, Music, Sparkles, Settings, Power, User, Activity } from 'lucide-react';
 import { AppId } from '../types';
 
 interface StartMenuProps {
@@ -24,6 +24,13 @@ export const StartMenu: React.FC<StartMenuProps> = ({
       name: 'Web 浏览器',
       desc: '支持安全 CSP 容灾与智能搜索',
       icon: <Globe className="w-6 h-6 text-blue-400" />,
+      color: 'hover:border-blue-500/50',
+    },
+    {
+      id: 'taskmanager',
+      name: '任务管理器',
+      desc: '进程管理与 CPU/内存性能监控',
+      icon: <Activity className="w-6 h-6 text-blue-500" />,
       color: 'hover:border-blue-500/50',
     },
     {
@@ -96,7 +103,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                 onClose();
               }
             }}
-            placeholder="搜索应用、系统工具... (Enter 启动)"
+            placeholder="搜索应用、任务管理器... (Enter 启动)"
             className="w-full bg-transparent text-xs text-zinc-100 placeholder-zinc-500 outline-none"
           />
         </div>
