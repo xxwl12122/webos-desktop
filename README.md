@@ -6,11 +6,11 @@
 
 <div align="center">
 
-### 🌐 [👉 点击这里立即在线体验 AetherOS 桌面 👈](https://xxwl12122.github.io/webos-desktop/)
+### 🚀 [👉 点击这里立即高速在线体验 AetherOS 桌面 (Vercel 极速版) 👈](https://webos-desktop-lyart.vercel.app)
 
 **无需安装，任何浏览器双击即开，已支持手机/平板/电脑跨端访问！**
 
-[![Deploy to GitHub Pages](https://github.com/xxwl12122/webos-desktop/actions/workflows/deploy.yml/badge.svg)](https://github.com/xxwl12122/webos-desktop/actions/workflows/deploy.yml)
+[![Live Demo](https://img.shields.io/badge/Demo-在线极速体验-3b82f6?logo=vercel&logoColor=white)](https://webos-desktop-lyart.vercel.app)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -20,47 +20,12 @@
 
 ---
 
-## 📍 在哪里点开？（3 步在 GitHub 开启并访问）
+## 🌟 线上体验入口
 
-你的项目已经配置了自动部署工作流，只需要在 GitHub 仓库开启 Pages 服务即可：
-
-1. **进入设置页面**：
-   点击进入你的仓库设置 👉 [https://github.com/xxwl12122/webos-desktop/settings/pages](https://github.com/xxwl12122/webos-desktop/settings/pages)
-2. **选择构建来源（两种任选一种均可）**：
-   * **方式一（推荐，最省心）**：
-     * 在 **Build and deployment** -> **Source** 下拉菜单选择：`GitHub Actions`
-   * **方式二（分支部署）**：
-     * **Source** 选择：`Deploy from a branch`
-     * **Branch** 选择：`gh-pages` / 目录选择 `/ (root)`，点击 **Save**
-3. **点开访问**：
-   保存后等待 30 秒至 1 分钟，页面上方就会出现带绿色勾勾的专属公开网址：
-   🔗 **`https://xxwl12122.github.io/webos-desktop/`**
-   直接把这个链接发给朋友、同学或发在朋友圈，所有人都可以随时点开体验！
-
----
-
-## ☁️ 有没有免费的在线服务器？让别人也能高速访问
-
-如果你想获得**更快的国内访问速度**、**专属自定义域名**或**抗高峰流量**，市面上有以下完全免费、免买服务器、免备案的顶级在线托管平台，全部支持将你的 GitHub 仓库一键关联部署：
-
-| 平台名称 | 费用 | 国内访问速度 | 特点与优势 | 推荐指数 |
-| :--- | :--- | :--- | :--- | :--- |
-| **Vercel** *(最推荐)* | **永久免费** | ⚡ 极快 (全球 Edge CDN) | 30 秒一键导入 GitHub，自带 `*.vercel.app` 免费域名，自动分配 HTTPS 证书，每次代码更新自动上线 | ⭐⭐⭐⭐⭐ |
-| **Cloudflare Pages** | **永久免费** | ⚡ 极快且稳定 (无限流量) | Cloudflare 顶级全球 CDN，抗高并发防 DDoS，提供免费 `*.pages.dev` 域名 | ⭐⭐⭐⭐⭐ |
-| **GitHub Pages** | **永久免费** | 良好 | GitHub 原生自带，无需注册其他账号，直接在仓库设置中开启 | ⭐⭐⭐⭐ |
-| **Netlify** | **永久免费** | 良好 | 类似 Vercel，提供每月 100GB 免费高速流量与一键自动化部署 | ⭐⭐⭐⭐ |
-
----
-
-### 🚀 强烈推荐：使用 Vercel 进行免费极速部署（只要 30 秒）
-
-如果希望别人无需魔法、在国内手机或微信里秒开你的 WebOS，推荐使用 **Vercel**：
-
-1. 打开 [https://vercel.com](https://vercel.com)，点击右上角 **Sign Up**，直接选择 **Continue with GitHub**（用你的 GitHub 账号直接登录，无需另外注册）。
-2. 登录后点击 **Add New...** -> 选择 **Project**。
-3. 在列表里你会直接看到刚刚创建的 **`webos-desktop`** 仓库，点击它旁边的 **Import** 按钮。
-4. Framework Preset 会自动识别为 `Vite`，无需修改任何参数，直接点击底部的 **Deploy** 按钮。
-5. 等待 20 秒左右，屏幕上会绽放烟花 🎉，并赠送给你一个所有人都能高速访问的网址（如 `https://webos-desktop-xxx.vercel.app`）！
+* ⚡ **全球高速直达节点（强烈推荐，国内秒开）**：  
+  👉 **[https://webos-desktop-lyart.vercel.app](https://webos-desktop-lyart.vercel.app)**
+* 📦 **GitHub Pages 备用节点**：  
+  👉 [https://xxwl12122.github.io/webos-desktop/](https://xxwl12122.github.io/webos-desktop/)
 
 ---
 
