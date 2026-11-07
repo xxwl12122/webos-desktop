@@ -1,12 +1,12 @@
-# AetherOS - 现代 WebOS 桌面操作系统
+# AetherOS - 现代极客 Web 桌面操作系统
 
 <p align="center">
-  <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1000&h=280&q=80" alt="AetherOS Banner" width="650" style="border-radius: 10px;" />
+  <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&h=280&q=85" alt="AetherOS Banner" width="650" style="border-radius: 10px;" />
 </p>
 
 <div align="center">
 
-### 🚀 [👉 点击这里立即高速在线体验 AetherOS 桌面 (Vercel 极速版) 👈](https://webos-desktop-lyart.vercel.app)
+### 🚀 [👉 点击这里立即高速在线体验 AetherOS (Vercel 极速版) 👈](https://webos-desktop-lyart.vercel.app)
 
 **无需安装，任何浏览器双击即开，已支持手机/平板/电脑跨端访问！**
 
@@ -29,43 +29,48 @@
 
 ---
 
-## 🌟 系统核心架构与功能清单
+## 🌟 核心架构与重构特性清单
 
-### 1. 窗口管理器与防穿透调度
-* **防断触遮罩（Anti-Drop Overlay）**：在窗口拖拽（Drag）或缩放（Resize）期间，动态激活全局防断触状态，强制 `iframe` 应用 `pointer-events: none`，彻底杜绝鼠标快速划过 iframe 时浏览器事件丢失。
-* **数组栈层级调度（Z-Index Stack Manager）**：通过 `windowStack: AppId[]` 状态数组动态计算 `zIndex = baseZIndex + windowStack.indexOf(id)`，活动窗口自动置顶并渲染发光轮廓与柔和投影，拒绝简单的 `zIndex++` 溢出。
-* **视口碰撞防护**：限制标题栏拖拽位移范围，防窗口拖离屏幕。
-* **自由伸缩**：支持右侧、底部及右下角三方向拉伸（带 `minWidth/minHeight` 约束），支持双击标题栏最大化/还原。
+### 1. Linear / macOS 质感暗黑设计系统
+* **纯正极客暗黑底色**：摒弃廉价的高饱和渐变，采用深度暗黑基底（`#09090b`）结合超细微质感描边（`border-white/[0.08]`）。
+* **多层混合磨砂质感**：多重滤镜叠加 `backdrop-blur-2xl bg-zinc-950/80 shadow-2xl shadow-black/80`，辅以活动窗口发光轮廓。
+* **精致系统级标题栏**：高度压低至 38px，原生 macOS 质感三色控制圆点（悬停显标、点击缩放反馈）。
 
-### 2. 桌面与 Dock 任务栏
-* **悬浮毛玻璃 Dock 栏**：macOS 风格磨砂质感，鼠标悬浮呈现 Dock Magnification 缩放动画。
-* **应用运行状态指示灯**：图标下方实时展示小圆点（运行中亮蓝光、最小化亮灰光、关闭熄灭）。点击已最小化应用平滑恢复并置顶。
-* **右键上下文菜单**：桌面空白处右键弹出快捷菜单（新建便签、随机换壁纸、全屏切换、系统设置）。
-* **常驻状态栏**：集成动态毫秒级时钟、在线/断网检测指示灯与全屏切换快捷按钮。
+### 2. 原生级手感交互重构
+* **边缘吸附（Snap Assist）**：拖拽窗口靠近屏幕左边缘、右边缘或顶部边缘时，呼出半透明的虚线占位框；释放鼠标自动平滑 Snap 为“左半屏（50%）”、“右半屏（50%）”或“全屏铺满”，并支持拖拽解吸附还原。
+* **全局右键接管**：全局捕获 `contextmenu` 事件屏蔽浏览器默认菜单，支持桌面空白处呼出专属暗黑上下文菜单。
+* **全局 Spotlight 启动器（⌘K / Ctrl+K）**：按下 `Cmd+K` 或 `Ctrl+K` 调出居中聚焦搜索栏，支持键盘上下箭头与回车快速启动或关闭任意应用与快捷指令。
 
-### 3. 内置核心应用套件
-* **轻舟浏览器（Browser）**：具备前进、后退、刷新、URL 输入栏、快速书签，以及遇到同源策略拦截（CSP/X-Frame-Options）时的友好引导层与外链跳转兜底。
-* **Aether AI 极客副驾驶（AI Copilot）**：对话交互终端，支持配置标准 OpenAI 兼容接口（Base URL、Model Name、API Key 本地持久化），支持 SSE 流式打字与 Markdown 代码高亮展示（带一键复制代码功能）。
-* **随手记（Notepad）**：实时防抖自动保存至本地存储，带字数统计与同步指示灯。
-* **系统设置（Settings）**：预设多套高清壁纸即换即存，支持本地上传任意图片转 Base64 持久化，提供一键恢复出厂设置选项。
+### 3. 四大核心实用极客 App
+1. **极客系统终端（Cyber Terminal）**：
+   - 真实高拟真 CLI 交互终端，Bash 提示符 `guest@webos:~$`。
+   - 内置命令解析：`help`、`neofetch`（彩色 ASCII 艺术字展示系统内核与分辨率参数）、`ping <domain>`、`matrix`（黑客帝国字符雨特效，按 Q 退出）、`date`、`whoami`、`uname -a`、`clear`。
+   - 支持键盘方向键上下回溯历史命令。
+2. **Markdown 沉浸式知识库（Notepad Pro）**：
+   - 支持编辑模式、分屏实时渲染模式与纯预览模式无缝切换。
+   - 内容实时防抖自动持久化到 `localStorage`，顶部提供“导出 .md 文件”与“清空笔记”动作。
+3. **极客音频频谱播放器（Lo-Fi / Synthwave Player）**：
+   - 内置高质量 Synthwave 80s 律动生成器，集成 Web Audio API 实时 Canvas 柱状音频频谱动画。
+   - 支持拖拽本地 `.mp3` / `.wav` 文件进窗口即拖即播，支持音量调节与播放进度控制。
+4. **AI 模型工作舱（AI Studio Terminal）**：
+   - 深度支持标准 OpenAI 兼容协议（可自定义 Base URL、Model Name、API Key）。
+   - 支持打字机动效、Token 耗时统计、预设 System Prompt 人设切换（极客架构师 / 代码审查官 / 哲学黑客）与会话导出（JSON / Markdown）。
 
 ---
 
 ## 🛠️ 本地运行指南
 
-如果你想在自己的电脑本地运行体验或进行二次开发：
-
 ```bash
-# 1. 克隆仓库到本地
+# 1. 克隆仓库
 git clone https://github.com/xxwl12122/webos-desktop.git
 
-# 2. 进入项目目录
+# 2. 进入项目
 cd webos-desktop
 
 # 3. 安装依赖
 npm install
 
-# 4. 启动本地开发服务器
+# 4. 启动本地开发服务
 npm run dev
 
 # 5. 编译生产版本

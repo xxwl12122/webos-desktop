@@ -1,4 +1,6 @@
-export type AppId = 'browser' | 'copilot' | 'notepad' | 'settings';
+export type AppId = 'terminal' | 'notepad' | 'player' | 'aistudio' | 'settings';
+
+export type SnapMode = 'none' | 'left' | 'right' | 'maximize';
 
 export interface WindowState {
   id: AppId;
@@ -6,6 +8,7 @@ export interface WindowState {
   isOpen: boolean;
   isMinimized: boolean;
   isMaximized: boolean;
+  snapMode: SnapMode;
   x: number;
   y: number;
   width: number;
@@ -18,15 +21,16 @@ export interface WindowState {
   minHeight: number;
 }
 
-export interface AiConfig {
+export interface AiStudioConfig {
   baseUrl: string;
   model: string;
   apiKey: string;
+  systemPrompt: string;
 }
 
 export interface SystemState {
   wallpaper: string;
   windows: Record<AppId, WindowState>;
   notepadContent: string;
-  aiConfig: AiConfig;
+  aiConfig: AiStudioConfig;
 }

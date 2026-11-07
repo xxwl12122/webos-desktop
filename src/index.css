@@ -2,9 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: #e4e4e7;
+    background-color: #09090b;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+}
+
 * {
-  user-select: none;
-  -webkit-user-drag: none;
   box-sizing: border-box;
 }
 
@@ -12,58 +21,83 @@ input, textarea, [contenteditable="true"] {
   user-select: text;
 }
 
+/* 细腻极客滚动条 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.15);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.25);
 }
 
+/* 顶级多层混合磨砂质感 */
 .glass-panel {
-  background: rgba(20, 24, 39, 0.78);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: rgba(18, 18, 22, 0.82);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .glass-dock {
-  background: rgba(15, 18, 30, 0.75);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  background: rgba(15, 15, 18, 0.78);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.12);
 }
 
+/* 活动窗口微发光与层级凸显 */
 .active-window {
-  border-color: rgba(59, 130, 246, 0.5) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 18px rgba(59, 130, 246, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
 }
 
-/* 拖拽或缩放时的全局防断触遮罩 */
+/* 拖拽或缩放时的全局防穿透保护 */
 body.is-dragging iframe,
 body.is-resizing iframe {
   pointer-events: none !important;
 }
 
 .window-anim {
-  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, width 0.2s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s cubic-bezier(0.16, 1, 0.3, 1), top 0.2s cubic-bezier(0.16, 1, 0.3, 1), left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease, width 0.2s cubic-bezier(0.16, 1, 0.3, 1), height 0.2s cubic-bezier(0.16, 1, 0.3, 1), top 0.2s cubic-bezier(0.16, 1, 0.3, 1), left 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .is-moving {
   transition: none !important;
 }
 
+/* Dock 动画 */
 .dock-item {
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .dock-item:hover {
-  transform: scale(1.22) translateY(-6px);
+  transform: scale(1.18) translateY(-5px);
 }
+
+/* 边缘吸附虚线占位框动画 */
+.snap-preview {
+  position: absolute;
+  z-index: 9980;
+  pointer-events: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px dashed rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(8px);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 缩放手柄 */
+.resize-handle {
+  position: absolute;
+  z-index: 50;
+}
+.resize-handle-r { right: 0; top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.resize-handle-b { left: 0; right: 0; bottom: 0; height: 6px; cursor: ns-resize; }
+.resize-handle-rb { right: 0; bottom: 0; width: 14px; height: 14px; cursor: nwse-resize; }
