@@ -1,7 +1,7 @@
 # AetherOS - 现代 WebOS 桌面操作系统
 
 <p align="center">
-  <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80" alt="AetherOS Banner" width="100%" style="border-radius: 12px; max-height: 380px; object-fit: cover;" />
+  <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1000&h=280&q=80" alt="AetherOS Banner" width="650" style="border-radius: 10px;" />
 </p>
 
 <div align="center">
