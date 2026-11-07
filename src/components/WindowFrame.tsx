@@ -220,51 +220,50 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
         isActive ? 'active-window' : ''
       } ${win.isMinimized ? 'opacity-0 scale-95 pointer-events-none !hidden' : ''}`}
     >
-      {/* 标题栏 (压低至 38px 细腻系统级高度) */}
+      {/* 标题栏 (Windows 风格：左侧标题与图标，右侧控制按钮) */}
       <div
         onMouseDown={handleTitleMouseDown}
         onDoubleClick={onToggleMaximize}
-        className="h-[38px] bg-zinc-950/70 px-3.5 flex items-center justify-between border-b border-white/[0.08] cursor-move shrink-0"
+        className="h-[38px] bg-zinc-950/70 pl-3.5 pr-0 flex items-center justify-between border-b border-white/[0.08] cursor-move shrink-0"
       >
-        <div className="flex items-center space-x-2.5">
-          {/* 原生 macOS 质感三色控制按钮 */}
-          <div className="flex items-center space-x-2 mr-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onClose();
-              }}
-              className="w-3 h-3 rounded-full bg-[#ff5f57] hover:bg-[#ff4b42] active:scale-90 transition-transform flex items-center justify-center group"
-              title="关闭"
-            >
-              <X className="w-2 h-2 text-red-950 opacity-0 group-hover:opacity-100 transition-opacity stroke-[2.5]" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onMinimize();
-              }}
-              className="w-3 h-3 rounded-full bg-[#febc2e] hover:bg-[#fea81e] active:scale-90 transition-transform flex items-center justify-center group"
-              title="最小化"
-            >
-              <Minus className="w-2 h-2 text-amber-950 opacity-0 group-hover:opacity-100 transition-opacity stroke-[2.5]" />
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleMaximize();
-              }}
-              className="w-3 h-3 rounded-full bg-[#28c840] hover:bg-[#1db334] active:scale-90 transition-transform flex items-center justify-center group"
-              title="最大化 / 还原"
-            >
-              <Square className="w-1.5 h-1.5 text-emerald-950 opacity-0 group-hover:opacity-100 transition-opacity stroke-[2.5]" />
-            </button>
-          </div>
+        {/* 左侧：应用图标与标题文字 */}
+        <div className="flex items-center space-x-2 text-xs font-medium text-zinc-300 tracking-tight select-none">
+          <span className="text-zinc-400">{icon}</span>
+          <span>{win.title}</span>
+        </div>
 
-          <div className="flex items-center space-x-1.5 text-xs font-medium text-zinc-300 tracking-tight">
-            <span className="text-zinc-400">{icon}</span>
-            <span>{win.title}</span>
-          </div>
+        {/* 右侧：Windows 风格控制按钮 【最小化】、【最大化/还原】、【关闭】 */}
+        <div className="flex items-center h-full">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onMinimize();
+            }}
+            className="h-full px-3 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.08] active:bg-white/[0.12] transition-colors flex items-center justify-center"
+            title="最小化"
+          >
+            <Minus className="w-3.5 h-3.5 stroke-[2]" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleMaximize();
+            }}
+            className="h-full px-3 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.08] active:bg-white/[0.12] transition-colors flex items-center justify-center"
+            title={win.isMaximized || win.snapMode !== 'none' ? '还原' : '最大化'}
+          >
+            <Square className="w-3 h-3 stroke-[2]" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="h-full px-3.5 text-zinc-400 hover:bg-red-500 hover:text-white active:bg-red-600 transition-colors flex items-center justify-center"
+            title="关闭"
+          >
+            <X className="w-3.5 h-3.5 stroke-[2]" />
+          </button>
         </div>
       </div>
 
