@@ -1,17 +1,34 @@
 import { SystemState } from '../types';
 
 export const PRESET_WALLPAPERS = [
-  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2560&q=85', // 纯黑微流体暗黑质感
-  'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=2560&q=85', // 暗夜极简星云
+  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=2560&q=85', // 通透山峦暮光
+  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=2560&q=85', // 极客古堡暗影
   'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=2560&q=85', // 暮色冷冽雪峰
-  'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=2560&q=85'  // 极客古堡暗影
+  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=2560&q=85', // 纯黑微流体暗黑质感
 ];
 
-export const STORAGE_KEY = 'aether_webos_geek_v3';
+export const STORAGE_KEY = 'aether_webos_win_v4';
 
 export const DEFAULT_STATE: SystemState = {
   wallpaper: PRESET_WALLPAPERS[0],
+  brightness: 100,
+  wallpaperOverlayOpacity: 12, // 默认极微柔和蒙层 12%，保持极高通透度
+  systemVolume: 80,
   windows: {
+    browser: {
+      id: 'browser',
+      title: 'Web 浏览器 (Pro)',
+      isOpen: false,
+      isMinimized: false,
+      isMaximized: false,
+      snapMode: 'none',
+      x: 100,
+      y: 50,
+      width: 860,
+      height: 560,
+      minWidth: 460,
+      minHeight: 320,
+    },
     terminal: {
       id: 'terminal',
       title: 'guest@webos: ~ (bash)',
@@ -33,8 +50,8 @@ export const DEFAULT_STATE: SystemState = {
       isMinimized: false,
       isMaximized: false,
       snapMode: 'none',
-      x: 160,
-      y: 90,
+      x: 140,
+      y: 80,
       width: 680,
       height: 520,
       minWidth: 420,
@@ -47,7 +64,7 @@ export const DEFAULT_STATE: SystemState = {
       isMinimized: false,
       isMaximized: false,
       snapMode: 'none',
-      x: 240,
+      x: 200,
       y: 110,
       width: 580,
       height: 420,
@@ -61,8 +78,8 @@ export const DEFAULT_STATE: SystemState = {
       isMinimized: false,
       isMaximized: false,
       snapMode: 'none',
-      x: 180,
-      y: 80,
+      x: 160,
+      y: 70,
       width: 680,
       height: 560,
       minWidth: 440,
@@ -76,11 +93,11 @@ export const DEFAULT_STATE: SystemState = {
       isMaximized: false,
       snapMode: 'none',
       x: 220,
-      y: 100,
-      width: 620,
-      height: 480,
+      y: 90,
+      width: 640,
+      height: 500,
       minWidth: 440,
-      minHeight: 300,
+      minHeight: 320,
     },
   },
   notepadContent: `# AetherOS 极客知识库
@@ -88,18 +105,17 @@ export const DEFAULT_STATE: SystemState = {
 欢迎使用 **Notepad Pro**。支持分栏实时渲染与本地即时热存储。
 
 ### 核心特性
-- [x] 原生 macOS / Linear 磨砂质感
+- [x] Windows 风格全宽底部任务栏与开始菜单
+- [x] 桌面大时钟小组件与 Windows 11 日历面板
+- [x] 联网自动校准时间系统（带离线自增保护）
+- [x] 原生内置生产级浏览器（带 CSP 安全容灾保护）
 - [x] 边缘吸附（Snap Assist: 拖到左/右/顶边缘自动半屏/全屏）
-- [x] 全局 Command / Ctrl + K Spotlight 启动器
-- [x] 极客终端 (包含 neofetch, ping, matrix 字符雨)
-- [x] Web Audio API 实时频谱播放器
+- [x] 全局 Command / Ctrl + K 快捷启动
 
 \`\`\`bash
 # 启动终端运行 neofetch
 guest@webos:~$ neofetch
 \`\`\`
-
-> 极客不是形式主义，而是将每一处细节淬炼至极致。
 `,
   aiConfig: {
     baseUrl: '',

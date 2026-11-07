@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Terminal, FileText, Music, Sparkles, Settings, Maximize, RotateCw, Image as ImageIcon } from 'lucide-react';
+import { Search, Globe, Terminal, FileText, Music, Sparkles, Settings, Maximize, RotateCw, Image as ImageIcon } from 'lucide-react';
 import { AppId } from '../types';
 
 interface SpotlightProps {
@@ -32,6 +32,14 @@ export const Spotlight: React.FC<SpotlightProps> = ({
 
   const commands: CommandItem[] = [
     {
+      id: 'app-browser',
+      title: 'Web 浏览器 (Pro)',
+      description: '支持智能域名检索与 CSP 安全拦截防护',
+      icon: <Globe className="w-4 h-4 text-blue-400" />,
+      category: 'Applications',
+      action: () => onOpenApp('browser'),
+    },
+    {
       id: 'app-terminal',
       title: '极客系统终端 (Cyber Terminal)',
       description: '运行 Neofetch、Ping 延迟诊断与 Matrix 字符雨',
@@ -50,7 +58,7 @@ export const Spotlight: React.FC<SpotlightProps> = ({
     {
       id: 'app-player',
       title: 'Lo-Fi / Synthwave 极客音频电台',
-      icon: <Music className="w-4 h-4 text-blue-400" />,
+      icon: <Music className="w-4 h-4 text-cyan-400" />,
       description: 'Web Audio API 实时柱状音频频谱动画与合成器旋律',
       category: 'Applications',
       action: () => onOpenApp('player'),
@@ -66,7 +74,7 @@ export const Spotlight: React.FC<SpotlightProps> = ({
     {
       id: 'app-settings',
       title: '系统偏好设置 (System Preferences)',
-      description: '壁纸切换、自定义上传与出厂状态管理',
+      description: '壁纸切换、显示亮度与出厂状态管理',
       icon: <Settings className="w-4 h-4 text-zinc-400" />,
       category: 'Applications',
       action: () => onOpenApp('settings'),
@@ -144,7 +152,6 @@ export const Spotlight: React.FC<SpotlightProps> = ({
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-xl rounded-2xl bg-zinc-950/90 border border-white/10 shadow-2xl shadow-black/90 overflow-hidden flex flex-col divide-y divide-zinc-800/80"
       >
-        {/* 输入框 */}
         <div className="flex items-center px-4 py-3 space-x-3">
           <Search className="w-4 h-4 text-zinc-400 shrink-0" />
           <input
@@ -161,7 +168,6 @@ export const Spotlight: React.FC<SpotlightProps> = ({
           </kbd>
         </div>
 
-        {/* 结果列表 */}
         <div className="max-h-[360px] overflow-y-auto p-2 space-y-1">
           {filtered.length === 0 ? (
             <div className="py-8 text-center text-xs text-zinc-500">未找到匹配的命令或应用</div>
@@ -201,7 +207,6 @@ export const Spotlight: React.FC<SpotlightProps> = ({
           )}
         </div>
 
-        {/* 底部导航提示 */}
         <div className="px-4 py-2 bg-zinc-900/60 flex items-center justify-between text-[11px] text-zinc-400 font-mono">
           <div className="flex items-center space-x-3">
             <span>↑↓ 切换选择</span>

@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Terminal, FileText, Music, Sparkles, Settings as SettingsIcon } from 'lucide-react';
+import { Globe, Terminal, FileText, Music, Sparkles, Settings as SettingsIcon } from 'lucide-react';
 import { AppId, SystemState, SnapMode, AiStudioConfig } from './types';
 import { loadSavedState, saveSystemState, PRESET_WALLPAPERS, DEFAULT_STATE } from './utils/storage';
-import { TopBar } from './components/TopBar';
-import { Dock } from './components/Dock';
+import { syncNetworkTime } from './utils/timeSync';
+import { WindowsTaskbar } from './components/WindowsTaskbar';
+import { StartMenu } from './components/StartMenu';
+import { CalendarPopover } from './components/CalendarPopover';
+import { ControlCenterPopover } from './components/ControlCenterPopover';
+import { DesktopClockWidget } from './components/DesktopClockWidget';
 import { ContextMenu } from './components/ContextMenu';
 import { WindowFrame } from './components/WindowFrame';
 import { Spotlight } from './components/Spotlight';
+import { BrowserApp } from './apps/BrowserApp';
 import { CyberTerminalApp } from './apps/CyberTerminalApp';
 import { NotepadProApp } from './apps/NotepadProApp';
 import { AudioPlayerApp } from './apps/AudioPlayerApp';
@@ -15,23 +20,34 @@ import { SettingsApp } from './apps/SettingsApp';
 
 export const App: React.FC = () => {
   const [systemState, setSystemState] = useState<SystemState>(loadSavedState);
-  const [windowStack, setWindowStack] = useState<AppId[]>(['terminal', 'notepad', 'player', 'aistudio', 'settings']);
+  const [windowStack, setWindowStack] = useState<AppId[]>(['terminal', 'browser', 'notepad', 'player', 'aistudio', 'settings']);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [isSpotlightOpen, setIsSpotlightOpen] = useState(false);
+  const [isStartOpen, setIsStartOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isControlCenterOpen, setIsControlCenterOpen] = useState(false);
   const [snapPreview, setSnapPreview] = useState<SnapMode | null>(null);
+
+  // 初始化网络时间同步
+  useEffect(() => {
+    syncNetworkTime();
+  }, []);
 
   // 状态自动持久化
   useEffect(() => {
     saveSystemState(systemState);
   }, [systemState]);
 
-  // 全局屏蔽浏览器原生右键菜单，彻底解决打架问题
+  // 全局屏蔽原生右键菜单
   useEffect(() => {
     const handleGlobalContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       const x = Math.min(e.clientX, window.innerWidth - 210);
-      const y = Math.min(e.clientY, window.innerHeight - 220);
+      const y = Math.min(e.clientY, window.innerHeight - 240);
       setContextMenu({ x, y });
+      setIsStartOpen(false);
+      setIsCalendarOpen(false);
+      setIsControlCenterOpen(false);
     };
 
     window.addEventListener('contextmenu', handleGlobalContextMenu);
@@ -149,12 +165,12 @@ export const App: React.FC = () => {
     bringToFront(id);
   }, [bringToFront]);
 
-  // Dock 栏点击调度
-  const handleToggleFromDock = useCallback((id: AppId) => {
+  // 任务栏点击调度
+  const handleTaskClick = useCallback((id: AppId) => {
     const win = systemState.windows[id];
     const isTop = windowStack[windowStack.length - 1] === id;
 
-    if (!win.isOpen || win.isMinimized) {
+    if (win.isMinimized) {
       openApp(id);
     } else if (isTop) {
       minimizeApp(id);
@@ -203,94 +219,119 @@ export const App: React.FC = () => {
   // 重置系统
   const handleResetSystem = () => {
     setSystemState(DEFAULT_STATE);
-    setWindowStack(['terminal', 'notepad', 'player', 'aistudio', 'settings']);
+    setWindowStack(['terminal', 'browser', 'notepad', 'player', 'aistudio', 'settings']);
     localStorage.clear();
     window.location.reload();
+  };
+
+  const closeAllPopovers = () => {
+    if (contextMenu) setContextMenu(null);
+    if (isStartOpen) setIsStartOpen(false);
+    if (isCalendarOpen) setIsCalendarOpen(false);
+    if (isControlCenterOpen) setIsControlCenterOpen(false);
   };
 
   const activeWindowId = windowStack[windowStack.length - 1];
   const BASE_Z_INDEX = 100;
 
-  // 边缘吸附虚线框样式
+  // 边缘吸附虚线框样式 (贴齐底栏 48px)
   const getSnapPreviewStyle = (): React.CSSProperties | null => {
     if (!snapPreview) return null;
     if (snapPreview === 'left') {
-      return { top: '38px', left: '6px', width: 'calc(50vw - 9px)', height: 'calc(100vh - 105px)' };
+      return { top: '6px', left: '6px', width: 'calc(50vw - 9px)', height: 'calc(100vh - 60px)' };
     }
     if (snapPreview === 'right') {
-      return { top: '38px', left: 'calc(50vw + 3px)', width: 'calc(50vw - 9px)', height: 'calc(100vh - 105px)' };
+      return { top: '6px', left: 'calc(50vw + 3px)', width: 'calc(50vw - 9px)', height: 'calc(100vh - 60px)' };
     }
     if (snapPreview === 'maximize') {
-      return { top: '38px', left: '6px', width: 'calc(100vw - 12px)', height: 'calc(100vh - 105px)' };
+      return { top: '6px', left: '6px', width: 'calc(100vw - 12px)', height: 'calc(100vh - 60px)' };
     }
     return null;
   };
 
   return (
     <div
-      onClick={() => contextMenu && setContextMenu(null)}
-      className="w-screen h-screen overflow-hidden text-zinc-100 bg-[#09090b] select-none relative font-sans antialiased"
+      onClick={closeAllPopovers}
+      style={{ filter: `brightness(${systemState.brightness}%)` }}
+      className="w-screen h-screen overflow-hidden text-zinc-100 bg-[#09090b] select-none relative font-sans antialiased transition-[filter] duration-150"
     >
-      {/* 极客暗黑壁纸背景 */}
+      {/* 1. 高清通透壁纸背景 (无死黑强制遮罩) */}
       <div
         style={{ backgroundImage: `url("${systemState.wallpaper}")` }}
-        className="absolute inset-0 bg-cover bg-center transition-all duration-700 ease-out z-0 filter brightness-75 contrast-110"
+        className="absolute inset-0 bg-cover bg-center transition-all duration-700 ease-out z-0 filter contrast-105"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/50 pointer-events-none z-[1]" />
+      {/* 自定义动态通透蒙层 */}
+      <div
+        style={{ backgroundColor: `rgba(0, 0, 0, ${systemState.wallpaperOverlayOpacity / 100})` }}
+        className="absolute inset-0 pointer-events-none z-[1] transition-colors duration-200"
+      />
 
-      {/* 1. 顶部状态栏 */}
-      <TopBar onOpenApp={openApp} onOpenSpotlight={() => setIsSpotlightOpen(true)} />
+      {/* 2. 桌面醒目大时钟小组件 (Desktop Clock Widget) */}
+      <DesktopClockWidget />
 
-      {/* 2. 桌面极客图标网格 */}
-      <main className="absolute inset-0 pt-12 pb-24 px-6 z-10 flex flex-col flex-wrap items-start content-start gap-4">
-        {/* Terminal */}
+      {/* 3. 桌面图标网格 */}
+      <main className="absolute inset-0 pt-6 pb-16 px-6 z-10 flex flex-col flex-wrap items-start content-start gap-3">
+        {/* Web 浏览器 */}
+        <div
+          onClick={() => openApp('browser')}
+          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
+        >
+          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+            <Globe className="w-5 h-5 text-blue-400" />
+          </div>
+          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+            Web 浏览器
+          </span>
+        </div>
+
+        {/* Cyber Terminal */}
         <div
           onClick={() => openApp('terminal')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.06] transition-colors"
+          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-900/90 border border-white/[0.08] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Terminal className="w-5 h-5 text-emerald-400" />
           </div>
-          <span className="mt-1.5 text-xs text-zinc-300 drop-shadow text-center font-medium group-hover:text-white">
-            终端
+          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+            极客终端
           </span>
         </div>
 
         {/* Notepad Pro */}
         <div
           onClick={() => openApp('notepad')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.06] transition-colors"
+          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-900/90 border border-white/[0.08] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <FileText className="w-5 h-5 text-amber-400" />
           </div>
-          <span className="mt-1.5 text-xs text-zinc-300 drop-shadow text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             知识便签
           </span>
         </div>
 
-        {/* Player */}
+        {/* Lo-Fi Player */}
         <div
           onClick={() => openApp('player')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.06] transition-colors"
+          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-900/90 border border-white/[0.08] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
-            <Music className="w-5 h-5 text-blue-400" />
+          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+            <Music className="w-5 h-5 text-cyan-400" />
           </div>
-          <span className="mt-1.5 text-xs text-zinc-300 drop-shadow text-center font-medium group-hover:text-white">
-            电台播放器
+          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+            音频电台
           </span>
         </div>
 
         {/* AI Studio */}
         <div
           onClick={() => openApp('aistudio')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.06] transition-colors"
+          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-900/90 border border-white/[0.08] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Sparkles className="w-5 h-5 text-purple-400" />
           </div>
-          <span className="mt-1.5 text-xs text-zinc-300 drop-shadow text-center font-medium group-hover:text-white">
+          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
             AI 工作舱
           </span>
         </div>
@@ -298,24 +339,42 @@ export const App: React.FC = () => {
         {/* Settings */}
         <div
           onClick={() => openApp('settings')}
-          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.06] transition-colors"
+          className="w-20 flex flex-col items-center group cursor-pointer p-2 rounded-xl hover:bg-white/[0.08] transition-colors"
         >
-          <div className="w-11 h-11 rounded-xl bg-zinc-900/90 border border-white/[0.08] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
+          <div className="w-11 h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <SettingsIcon className="w-5 h-5 text-zinc-400" />
           </div>
-          <span className="mt-1.5 text-xs text-zinc-300 drop-shadow text-center font-medium group-hover:text-white">
-            偏好设置
+          <span className="mt-1 text-xs text-zinc-200 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] text-center font-medium group-hover:text-white">
+            系统设置
           </span>
         </div>
       </main>
 
-      {/* 3. Snap Assist 边缘吸附虚线占位框 */}
+      {/* 4. Snap Assist 边缘吸附虚线占位框 */}
       {snapPreview && (
         <div style={getSnapPreviewStyle() || {}} className="snap-preview" />
       )}
 
-      {/* 4. 窗口集合 (Z-Index Stack 管理) */}
-      <div className="absolute inset-0 pointer-events-none z-20">
+      {/* 5. 窗口集合 (Z-Index Stack 管理) */}
+      <div className="absolute inset-0 pointer-events-none z-20 pb-12">
+        {/* Web Browser Pro */}
+        <WindowFrame
+          window={systemState.windows.browser}
+          icon={<Globe className="w-3.5 h-3.5 text-blue-400" />}
+          zIndex={BASE_Z_INDEX + windowStack.indexOf('browser')}
+          isActive={activeWindowId === 'browser'}
+          onFocus={() => bringToFront('browser')}
+          onClose={() => closeApp('browser')}
+          onMinimize={() => minimizeApp('browser')}
+          onToggleMaximize={() => toggleMaximizeApp('browser')}
+          onUpdatePosition={(x, y) => updatePosition('browser', x, y)}
+          onUpdateSize={(w, h) => updateSize('browser', w, h)}
+          onApplySnap={(mode) => applySnap('browser', mode)}
+          onSetSnapPreview={setSnapPreview}
+        >
+          <BrowserApp />
+        </WindowFrame>
+
         {/* Cyber Terminal */}
         <WindowFrame
           window={systemState.windows.terminal}
@@ -360,7 +419,7 @@ export const App: React.FC = () => {
         {/* Lo-Fi Player */}
         <WindowFrame
           window={systemState.windows.player}
-          icon={<Music className="w-3.5 h-3.5 text-blue-400" />}
+          icon={<Music className="w-3.5 h-3.5 text-cyan-400" />}
           zIndex={BASE_Z_INDEX + windowStack.indexOf('player')}
           isActive={activeWindowId === 'player'}
           onFocus={() => bringToFront('player')}
@@ -416,15 +475,67 @@ export const App: React.FC = () => {
           <SettingsApp
             currentWallpaper={systemState.wallpaper}
             onSetWallpaper={(wp) => setSystemState((prev) => ({ ...prev, wallpaper: wp }))}
+            brightness={systemState.brightness}
+            onBrightnessChange={(b) => setSystemState((prev) => ({ ...prev, brightness: b }))}
+            overlayOpacity={systemState.wallpaperOverlayOpacity}
+            onOverlayOpacityChange={(o) => setSystemState((prev) => ({ ...prev, wallpaperOverlayOpacity: o }))}
             onResetSystem={handleResetSystem}
           />
         </WindowFrame>
       </div>
 
-      {/* 5. 底部悬浮 Dock */}
-      <Dock windows={systemState.windows} onToggleApp={handleToggleFromDock} />
+      {/* 6. Windows 风格置底任务栏 (Windows Taskbar 48px) */}
+      <WindowsTaskbar
+        windows={systemState.windows}
+        activeWindowId={activeWindowId}
+        isStartOpen={isStartOpen}
+        onToggleStart={() => {
+          setIsStartOpen((prev) => !prev);
+          setIsCalendarOpen(false);
+          setIsControlCenterOpen(false);
+        }}
+        isCalendarOpen={isCalendarOpen}
+        onToggleCalendar={() => {
+          setIsCalendarOpen((prev) => !prev);
+          setIsStartOpen(false);
+          setIsControlCenterOpen(false);
+        }}
+        isControlCenterOpen={isControlCenterOpen}
+        onToggleControlCenter={() => {
+          setIsControlCenterOpen((prev) => !prev);
+          setIsStartOpen(false);
+          setIsCalendarOpen(false);
+        }}
+        onTaskClick={handleTaskClick}
+      />
 
-      {/* 6. Spotlight 全局启动器 (⌘K / Ctrl+K) */}
+      {/* 7. Windows 浮动开始菜单 (Start Menu) */}
+      <StartMenu
+        isOpen={isStartOpen}
+        onClose={() => setIsStartOpen(false)}
+        onOpenApp={openApp}
+        onResetSystem={handleResetSystem}
+      />
+
+      {/* 8. Windows 11 风格悬浮毛玻璃月历面板 (Calendar Popover) */}
+      {isCalendarOpen && (
+        <CalendarPopover onClose={() => setIsCalendarOpen(false)} />
+      )}
+
+      {/* 9. 系统控制中心面板 (Control Center Popover) */}
+      {isControlCenterOpen && (
+        <ControlCenterPopover
+          brightness={systemState.brightness}
+          onBrightnessChange={(b) => setSystemState((prev) => ({ ...prev, brightness: b }))}
+          volume={systemState.systemVolume}
+          onVolumeChange={(v) => setSystemState((prev) => ({ ...prev, systemVolume: v }))}
+          overlayOpacity={systemState.wallpaperOverlayOpacity}
+          onOverlayOpacityChange={(o) => setSystemState((prev) => ({ ...prev, wallpaperOverlayOpacity: o }))}
+          onClose={() => setIsControlCenterOpen(false)}
+        />
+      )}
+
+      {/* 10. 全局 Spotlight 快速启动器 (⌘K / Ctrl+K) */}
       <Spotlight
         isOpen={isSpotlightOpen}
         onClose={() => setIsSpotlightOpen(false)}
@@ -439,14 +550,15 @@ export const App: React.FC = () => {
         }}
       />
 
-      {/* 7. 全局右键上下文菜单 */}
+      {/* 11. 全局右键上下文菜单 */}
       {contextMenu && (
         <ContextMenu
           x={contextMenu.x}
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
-          onNewNote={() => openApp('notepad')}
+          onOpenBrowser={() => openApp('browser')}
           onOpenTerminal={() => openApp('terminal')}
+          onNewNote={() => openApp('notepad')}
           onRandomWallpaper={handleRandomWallpaper}
           onToggleFullscreen={() => {
             if (!document.fullscreenElement) {

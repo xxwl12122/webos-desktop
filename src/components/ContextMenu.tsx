@@ -1,12 +1,13 @@
 import React from 'react';
-import { Terminal, FilePlus, Image as ImageIcon, Maximize, Settings, RotateCw } from 'lucide-react';
+import { Globe, Terminal, FilePlus, Image as ImageIcon, Maximize, Settings, RotateCw } from 'lucide-react';
 
 interface ContextMenuProps {
   x: number;
   y: number;
   onClose: () => void;
-  onNewNote: () => void;
+  onOpenBrowser: () => void;
   onOpenTerminal: () => void;
+  onNewNote: () => void;
   onRandomWallpaper: () => void;
   onToggleFullscreen: () => void;
   onOpenSettings: () => void;
@@ -16,8 +17,9 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
   onClose,
-  onNewNote,
+  onOpenBrowser,
   onOpenTerminal,
+  onNewNote,
   onRandomWallpaper,
   onToggleFullscreen,
   onOpenSettings,
@@ -26,9 +28,19 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
     <div
       onClick={(e) => e.stopPropagation()}
       style={{ left: `${x}px`, top: `${y}px` }}
-      className="fixed z-[99999] w-48 rounded-xl bg-zinc-950/95 border border-white/10 py-1.5 shadow-2xl shadow-black/80 backdrop-blur-2xl text-xs text-zinc-300 divide-y divide-zinc-800/80 animate-in fade-in duration-100"
+      className="fixed z-[99999] w-48 rounded-xl bg-zinc-950/95 border border-white/10 py-1.5 shadow-2xl shadow-black/80 backdrop-blur-2xl text-xs text-zinc-300 divide-y divide-zinc-800/80 animate-in fade-in duration-100 select-none"
     >
       <div className="py-1">
+        <button
+          onClick={() => {
+            onOpenBrowser();
+            onClose();
+          }}
+          className="w-full text-left px-3 py-1.5 hover:bg-zinc-800/80 hover:text-white flex items-center space-x-2.5 transition-colors"
+        >
+          <Globe className="w-3.5 h-3.5 text-blue-400" />
+          <span>打开 Web 浏览器</span>
+        </button>
         <button
           onClick={() => {
             onOpenTerminal();
@@ -37,7 +49,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           className="w-full text-left px-3 py-1.5 hover:bg-zinc-800/80 hover:text-white flex items-center space-x-2.5 transition-colors"
         >
           <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-          <span>打开极客终端</span>
+          <span>打开系统终端</span>
         </button>
         <button
           onClick={() => {
@@ -57,7 +69,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           className="w-full text-left px-3 py-1.5 hover:bg-zinc-800/80 hover:text-white flex items-center space-x-2.5 transition-colors"
         >
           <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
-          <span>换一张暗黑壁纸</span>
+          <span>换一张高清壁纸</span>
         </button>
       </div>
 
@@ -80,7 +92,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           className="w-full text-left px-3 py-1.5 hover:bg-zinc-800/80 hover:text-white flex items-center space-x-2.5 transition-colors"
         >
           <Settings className="w-3.5 h-3.5 text-zinc-400" />
-          <span>系统偏好设置</span>
+          <span>显示与系统设置</span>
         </button>
         <button
           onClick={() => {
