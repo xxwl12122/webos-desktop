@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { SlidersHorizontal, Wifi, WifiOff, Globe, Terminal, FileText, Music, Sparkles, Settings, Activity, Monitor, RotateCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { SlidersHorizontal, Wifi, WifiOff, Globe, Terminal, FileText, Music, Sparkles, Settings, Activity, Monitor, RotateCw, Layers, X } from 'lucide-react';
 import { AppId, WindowState } from '../types';
 import { getSyncedDate } from '../utils/timeSync';
 
@@ -15,6 +15,8 @@ interface WindowsTaskbarProps {
   onTaskClick: (id: AppId) => void;
   onOpenTaskManager: () => void;
   onOpenSettings?: () => void;
+  onToggleTaskSwitcher?: () => void;
+  onCloseApp?: (id: AppId) => void;
   onMinimizeAll: () => void;
 }
 
@@ -30,11 +32,16 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
   onTaskClick,
   onOpenTaskManager,
   onOpenSettings,
+  onToggleTaskSwitcher,
+  onCloseApp,
   onMinimizeAll,
 }) => {
   const [date, setDate] = useState<Date>(getSyncedDate);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [taskbarContextMenu, setTaskbarContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [hoveredAppId, setHoveredAppId] = useState<AppId | null>(null);
+  const [previewPos, setPreviewPos] = useState<{ x: number } | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -115,7 +122,23 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
           return (
             <button
               key={id}
-              onClick={() => onTaskClick(id)}
+              onClick={() => {
+                onTaskClick(id);
+                setHoveredAppId(null);
+              }}
+              onMouseEnter={(e) => {
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                hoverTimerRef.current = setTimeout(() => {
+                  setHoveredAppId(id);
+                  setPreviewPos({ x: centerX });
+                }, 250);
+              }}
+              onMouseLeave={() => {
+                if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                setHoveredAppId(null);
+              }}
               className={`h-9 px-2 sm:px-3 rounded-lg max-w-[110px] sm:max-w-[180px] shrink-0 sm:shrink flex items-center space-x-1.5 sm:space-x-2 transition-all border-b-2 text-xs truncate ${
                 isActive
                   ? 'bg-white/[0.08] text-zinc-100 border-blue-500 shadow-sm'
@@ -184,6 +207,19 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
           </div>
 
           <div className="py-1 space-y-0.5">
+            {onToggleTaskSwitcher && (
+              <button
+                onClick={() => {
+                  onToggleTaskSwitcher();
+                  setTaskbarContextMenu(null);
+                }}
+                className="w-full text-left px-3 py-1.5 rounded-lg hover:bg-zinc-800 hover:text-white flex items-center space-x-2.5 transition-colors cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5 text-zinc-400" />
+                <span>任务视图 (Alt+Tab)</span>
+              </button>
+            )}
+
             <button
               onClick={() => {
                 onMinimizeAll();
@@ -217,6 +253,60 @@ export const WindowsTaskbar: React.FC<WindowsTaskbarProps> = ({
               <RotateCw className="w-3.5 h-3.5 text-zinc-400" />
               <span>重启桌面环境</span>
             </button>
+          </div>
+        </div>
+      )}
+      {/* 4. 任务栏卡片 Hover 动态缩略图预览卡片 (Windows 11 Hover Preview) */}
+      {hoveredAppId && previewPos && windows[hoveredAppId] && windows[hoveredAppId].isOpen && (
+        <div
+          style={{
+            left: `${Math.max(12, Math.min(previewPos.x - 100, window.innerWidth - 220))}px`,
+            bottom: '52px',
+          }}
+          onMouseEnter={() => {
+            if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+          }}
+          onMouseLeave={() => setHoveredAppId(null)}
+          className="fixed z-[99995] w-52 rounded-xl bg-zinc-950/95 border border-white/10 p-2.5 shadow-2xl shadow-black/90 backdrop-blur-2xl text-xs text-zinc-300 pointer-events-auto select-none animate-in fade-in zoom-in-95 duration-100"
+        >
+          <div className="flex items-center justify-between pb-1.5 border-b border-zinc-800/80">
+            <div className="flex items-center space-x-2 truncate">
+              {appIcons[hoveredAppId]}
+              <span className="font-medium text-zinc-200 truncate text-[11px]">{windows[hoveredAppId].title}</span>
+            </div>
+            {onCloseApp && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCloseApp(hoveredAppId);
+                  setHoveredAppId(null);
+                }}
+                className="p-1 rounded hover:bg-red-500 hover:text-white text-zinc-400 transition-colors"
+                title="关闭"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+
+          {/* 实时微缩意象视图 */}
+          <div
+            onClick={() => {
+              onTaskClick(hoveredAppId);
+              setHoveredAppId(null);
+            }}
+            className="mt-2 h-24 rounded-lg bg-zinc-900/80 border border-zinc-800 hover:border-blue-500/60 cursor-pointer p-2 flex flex-col justify-between transition-colors overflow-hidden group"
+          >
+            <div className="w-full flex items-center justify-between text-[10px] text-zinc-500 font-mono">
+              <span>{windows[hoveredAppId].isMinimized ? '后台挂起' : '前台活动'}</span>
+              <span className="text-blue-400 group-hover:underline">点击聚焦</span>
+            </div>
+            <div className="flex items-center justify-center text-zinc-500 group-hover:scale-110 transition-transform">
+              {appIcons[hoveredAppId]}
+            </div>
+            <div className="text-[10px] text-zinc-400 truncate text-center">
+              {windows[hoveredAppId].title}
+            </div>
           </div>
         </div>
       )}

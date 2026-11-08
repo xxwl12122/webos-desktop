@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Globe, Terminal, FileText, Music, Sparkles, Settings as SettingsIcon, Activity } from 'lucide-react';
 import { AppId, SystemState, SnapMode, AiStudioConfig } from './types';
 import { loadSavedState, saveSystemState, PRESET_WALLPAPERS, DEFAULT_STATE } from './utils/storage';
@@ -10,6 +10,7 @@ import { ControlCenterPopover } from './components/ControlCenterPopover';
 import { ContextMenu } from './components/ContextMenu';
 import { WindowFrame } from './components/WindowFrame';
 import { Spotlight } from './components/Spotlight';
+import { TaskSwitcher } from './components/TaskSwitcher';
 import { BrowserApp } from './apps/BrowserApp';
 import { CyberTerminalApp } from './apps/CyberTerminalApp';
 import { NotepadProApp } from './apps/NotepadProApp';
@@ -35,6 +36,16 @@ export const App: React.FC = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isControlCenterOpen, setIsControlCenterOpen] = useState(false);
   const [snapPreview, setSnapPreview] = useState<SnapMode | null>(null);
+
+  // 多任务 Alt+Tab 切换器状态
+  const [isTaskSwitcherOpen, setIsTaskSwitcherOpen] = useState(false);
+  const [switcherIndex, setSwitcherIndex] = useState(0);
+
+  // 桌面框选多选状态
+  const [selectionBox, setSelectionBox] = useState<{ startX: number; startY: number; currentX: number; currentY: number } | null>(null);
+  const [selectedAppIds, setSelectedAppIds] = useState<AppId[]>([]);
+  const [isDesktopRefreshing, setIsDesktopRefreshing] = useState(false);
+  const desktopMainRef = useRef<HTMLElement>(null);
 
   // 初始化网络时间同步
   useEffect(() => {
@@ -92,7 +103,14 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('contextmenu', handleGlobalContextMenu);
   }, []);
 
-  // 全局快捷键监听 (⌘K / Ctrl+K 搜索，Ctrl+Shift+Esc 任务管理器)
+  // 桌面刷新微动 (Windows F5 体验)
+  const handleRefreshDesktop = useCallback(() => {
+    setIsDesktopRefreshing(true);
+    setSelectedAppIds([]);
+    setTimeout(() => setIsDesktopRefreshing(false), 150);
+  }, []);
+
+  // 全局快捷键监听 (⌘K / Ctrl+K 搜索，Ctrl+Shift+Esc 任务管理器，Alt+Tab 任务切换，F5 刷新)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -101,11 +119,39 @@ export const App: React.FC = () => {
       } else if (e.ctrlKey && e.shiftKey && e.key === 'Escape') {
         e.preventDefault();
         openApp('taskmanager');
+      } else if (e.key === 'F5') {
+        e.preventDefault();
+        handleRefreshDesktop();
+      } else if (e.altKey && e.key === 'Tab') {
+        e.preventDefault();
+        const opened = [...windowStack].reverse().filter((id) => systemState.windows[id]?.isOpen);
+        if (opened.length > 0) {
+          setIsTaskSwitcherOpen(true);
+          setSwitcherIndex((prev) => (prev + 1) % opened.length);
+        }
+      } else if (e.key === 'Enter' && selectedAppIds.length > 0) {
+        selectedAppIds.forEach((id) => openApp(id));
+        setSelectedAppIds([]);
       }
     };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Alt' && isTaskSwitcherOpen) {
+        const opened = [...windowStack].reverse().filter((id) => systemState.windows[id]?.isOpen);
+        if (opened[switcherIndex]) {
+          openApp(opened[switcherIndex]);
+        }
+        setIsTaskSwitcherOpen(false);
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [openApp]);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [openApp, windowStack, systemState.windows, isTaskSwitcherOpen, switcherIndex, selectedAppIds]);
 
   // 关闭窗口
   const closeApp = useCallback((id: AppId) => {
@@ -276,9 +322,63 @@ export const App: React.FC = () => {
     return null;
   };
 
+  // 桌面空白处鼠标框选 (Marquee Selection)
+  const handleDesktopPointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('.group') || target.closest('.glass-panel') || target.closest('footer')) return;
+
+    setSelectionBox({
+      startX: e.clientX,
+      startY: e.clientY,
+      currentX: e.clientX,
+      currentY: e.clientY,
+    });
+    setSelectedAppIds([]);
+  };
+
+  const handleDesktopPointerMove = (e: React.PointerEvent) => {
+    if (!selectionBox) return;
+
+    const currentX = e.clientX;
+    const currentY = e.clientY;
+    setSelectionBox((prev) => (prev ? { ...prev, currentX, currentY } : null));
+
+    const boxLeft = Math.min(selectionBox.startX, currentX);
+    const boxRight = Math.max(selectionBox.startX, currentX);
+    const boxTop = Math.min(selectionBox.startY, currentY);
+    const boxBottom = Math.max(selectionBox.startY, currentY);
+
+    const iconElements = document.querySelectorAll<HTMLElement>('[data-app-id]');
+    const newSelected: AppId[] = [];
+
+    iconElements.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const isOverlap = !(
+        rect.right < boxLeft ||
+        rect.left > boxRight ||
+        rect.bottom < boxTop ||
+        rect.top > boxBottom
+      );
+      const appId = el.dataset.appId as AppId;
+      if (isOverlap && appId) {
+        newSelected.push(appId);
+      }
+    });
+
+    setSelectedAppIds(newSelected);
+  };
+
+  const handleDesktopPointerUp = () => {
+    setSelectionBox(null);
+  };
+
   return (
     <div
       onClick={closeAllPopovers}
+      onPointerDown={handleDesktopPointerDown}
+      onPointerMove={handleDesktopPointerMove}
+      onPointerUp={handleDesktopPointerUp}
       style={{ filter: `brightness(${systemState.brightness}%)` }}
       className="w-screen h-screen overflow-hidden text-zinc-100 bg-[#09090b] select-none relative font-sans antialiased transition-[filter] duration-150"
     >
@@ -294,11 +394,20 @@ export const App: React.FC = () => {
       />
 
       {/* 2. 桌面图标网格 (小屏与移动端响应式，纯净桌面无遮挡) */}
-      <main className="absolute inset-0 pt-3 sm:pt-6 pb-16 px-3 sm:px-6 z-10 flex flex-col flex-wrap items-start content-start gap-1 sm:gap-3">
+      <main
+        className={`absolute inset-0 pt-3 sm:pt-6 pb-16 px-3 sm:px-6 z-10 flex flex-col flex-wrap items-start content-start gap-1 sm:gap-3 transition-opacity duration-150 ${
+          isDesktopRefreshing ? 'opacity-40 scale-[0.998]' : 'opacity-100 scale-100'
+        }`}
+      >
         {/* Web 浏览器 */}
         <div
+          data-app-id="browser"
           onClick={() => openApp('browser')}
-          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
+          className={`w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl transition-all ${
+            selectedAppIds.includes('browser')
+              ? 'ring-2 ring-blue-500/80 bg-blue-500/20 shadow-lg'
+              : 'hover:bg-white/[0.08] active:bg-white/15'
+          }`}
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Globe className="w-5 h-5 text-blue-400" />
@@ -310,8 +419,13 @@ export const App: React.FC = () => {
 
         {/* 任务管理器 (Windows 风格) */}
         <div
+          data-app-id="taskmanager"
           onClick={() => openApp('taskmanager')}
-          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
+          className={`w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl transition-all ${
+            selectedAppIds.includes('taskmanager')
+              ? 'ring-2 ring-blue-500/80 bg-blue-500/20 shadow-lg'
+              : 'hover:bg-white/[0.08] active:bg-white/15'
+          }`}
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Activity className="w-5 h-5 text-blue-500" />
@@ -323,8 +437,13 @@ export const App: React.FC = () => {
 
         {/* Cyber Terminal */}
         <div
+          data-app-id="terminal"
           onClick={() => openApp('terminal')}
-          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
+          className={`w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl transition-all ${
+            selectedAppIds.includes('terminal')
+              ? 'ring-2 ring-blue-500/80 bg-blue-500/20 shadow-lg'
+              : 'hover:bg-white/[0.08] active:bg-white/15'
+          }`}
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Terminal className="w-5 h-5 text-emerald-400" />
@@ -336,8 +455,13 @@ export const App: React.FC = () => {
 
         {/* Notepad Pro */}
         <div
+          data-app-id="notepad"
           onClick={() => openApp('notepad')}
-          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
+          className={`w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl transition-all ${
+            selectedAppIds.includes('notepad')
+              ? 'ring-2 ring-blue-500/80 bg-blue-500/20 shadow-lg'
+              : 'hover:bg-white/[0.08] active:bg-white/15'
+          }`}
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <FileText className="w-5 h-5 text-amber-400" />
@@ -349,8 +473,13 @@ export const App: React.FC = () => {
 
         {/* Lo-Fi Player */}
         <div
+          data-app-id="player"
           onClick={() => openApp('player')}
-          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
+          className={`w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl transition-all ${
+            selectedAppIds.includes('player')
+              ? 'ring-2 ring-blue-500/80 bg-blue-500/20 shadow-lg'
+              : 'hover:bg-white/[0.08] active:bg-white/15'
+          }`}
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Music className="w-5 h-5 text-cyan-400" />
@@ -362,8 +491,13 @@ export const App: React.FC = () => {
 
         {/* AI Studio */}
         <div
+          data-app-id="aistudio"
           onClick={() => openApp('aistudio')}
-          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
+          className={`w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl transition-all ${
+            selectedAppIds.includes('aistudio')
+              ? 'ring-2 ring-blue-500/80 bg-blue-500/20 shadow-lg'
+              : 'hover:bg-white/[0.08] active:bg-white/15'
+          }`}
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <Sparkles className="w-5 h-5 text-purple-400" />
@@ -375,8 +509,13 @@ export const App: React.FC = () => {
 
         {/* Settings */}
         <div
+          data-app-id="settings"
           onClick={() => openApp('settings')}
-          className="w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl hover:bg-white/[0.08] active:bg-white/15 transition-colors"
+          className={`w-16 sm:w-20 flex flex-col items-center group cursor-pointer p-1.5 sm:p-2 rounded-xl transition-all ${
+            selectedAppIds.includes('settings')
+              ? 'ring-2 ring-blue-500/80 bg-blue-500/20 shadow-lg'
+              : 'hover:bg-white/[0.08] active:bg-white/15'
+          }`}
         >
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-zinc-950/80 border border-white/10 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-150">
             <SettingsIcon className="w-5 h-5 text-zinc-400" />
@@ -386,6 +525,19 @@ export const App: React.FC = () => {
           </span>
         </div>
       </main>
+
+      {/* 桌面半透明矩形拉框选择 (Marquee Selection Overlay) */}
+      {selectionBox && (
+        <div
+          style={{
+            left: `${Math.min(selectionBox.startX, selectionBox.currentX)}px`,
+            top: `${Math.min(selectionBox.startY, selectionBox.currentY)}px`,
+            width: `${Math.abs(selectionBox.currentX - selectionBox.startX)}px`,
+            height: `${Math.abs(selectionBox.currentY - selectionBox.startY)}px`,
+          }}
+          className="fixed border border-blue-400/80 bg-blue-500/15 pointer-events-none z-[9990] rounded-sm transition-none shadow-sm"
+        />
+      )}
 
       {/* 3. Snap Assist 边缘吸附虚线占位框 */}
       {snapPreview && (
@@ -568,6 +720,8 @@ export const App: React.FC = () => {
         onTaskClick={handleTaskClick}
         onOpenTaskManager={() => openApp('taskmanager')}
         onOpenSettings={() => openApp('settings')}
+        onToggleTaskSwitcher={() => setIsTaskSwitcherOpen(true)}
+        onCloseApp={closeApp}
         onMinimizeAll={minimizeAll}
       />
 
@@ -620,8 +774,10 @@ export const App: React.FC = () => {
           onClose={() => setContextMenu(null)}
           onOpenBrowser={() => openApp('browser')}
           onOpenTerminal={() => openApp('terminal')}
+          onOpenTaskManager={() => openApp('taskmanager')}
           onNewNote={() => openApp('notepad')}
           onRandomWallpaper={handleRandomWallpaper}
+          onRefreshDesktop={handleRefreshDesktop}
           onToggleFullscreen={() => {
             if (!document.fullscreenElement) {
               document.documentElement.requestFullscreen().catch(() => {});
@@ -632,6 +788,17 @@ export const App: React.FC = () => {
           onOpenSettings={() => openApp('settings')}
         />
       )}
+
+      {/* 11. Alt + Tab 多任务窗口平视切换器 */}
+      <TaskSwitcher
+        isOpen={isTaskSwitcherOpen}
+        windows={systemState.windows}
+        windowStack={windowStack}
+        selectedIndex={switcherIndex}
+        onSelectIndex={setSwitcherIndex}
+        onConfirm={(id) => openApp(id)}
+        onClose={() => setIsTaskSwitcherOpen(false)}
+      />
     </div>
   );
 };

@@ -44,6 +44,23 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
 
   const isMobile = viewportWidth < 768; // 手机端断点
   const isTablet = viewportWidth >= 768 && viewportWidth < 1024; // 平板端断点
+  const [showSnapMenu, setShowSnapMenu] = useState(false);
+  const snapMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMaximizeMouseEnter = () => {
+    if (isMobile) return;
+    if (snapMenuTimeoutRef.current) clearTimeout(snapMenuTimeoutRef.current);
+    snapMenuTimeoutRef.current = setTimeout(() => {
+      setShowSnapMenu(true);
+    }, 200);
+  };
+
+  const handleMaximizeMouseLeave = () => {
+    if (snapMenuTimeoutRef.current) clearTimeout(snapMenuTimeoutRef.current);
+    snapMenuTimeoutRef.current = setTimeout(() => {
+      setShowSnapMenu(false);
+    }, 250);
+  };
 
   if (!win.isOpen) return null;
 
@@ -276,16 +293,89 @@ export const WindowFrame: React.FC<WindowFrameProps> = ({
 
           {/* 手机端隐藏最大化切换按钮 */}
           {!isMobile && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleMaximize();
-              }}
-              className="h-full px-3 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.08] active:bg-white/[0.15] transition-colors flex items-center justify-center"
-              title={win.isMaximized || win.snapMode !== 'none' ? '还原' : '最大化'}
+            <div
+              className="relative h-full flex items-center"
+              onMouseEnter={handleMaximizeMouseEnter}
+              onMouseLeave={handleMaximizeMouseLeave}
             >
-              <Square className="w-3 h-3 stroke-[2]" />
-            </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSnapMenu(false);
+                  onToggleMaximize();
+                }}
+                className="h-full px-3 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.08] active:bg-white/[0.15] transition-colors flex items-center justify-center"
+                title={win.isMaximized || win.snapMode !== 'none' ? '还原' : '最大化 (悬停贴靠布局)'}
+              >
+                <Square className="w-3 h-3 stroke-[2]" />
+              </button>
+
+              {/* Windows 11 贴靠布局浮窗 (Snap Layouts Menu) */}
+              {showSnapMenu && (
+                <div
+                  onMouseEnter={() => {
+                    if (snapMenuTimeoutRef.current) clearTimeout(snapMenuTimeoutRef.current);
+                  }}
+                  onMouseLeave={handleMaximizeMouseLeave}
+                  className="absolute top-full right-0 mt-1 z-[99999] w-48 p-2.5 rounded-xl bg-zinc-950/95 border border-white/10 shadow-2xl backdrop-blur-2xl text-xs text-zinc-200 animate-in fade-in zoom-in-95 duration-100 select-none"
+                >
+                  <div className="text-[10px] text-zinc-400 mb-2 font-medium flex items-center justify-between">
+                    <span>贴靠布局 (Snap Layouts)</span>
+                    <span className="text-[9px] text-blue-400 font-mono">Win 11</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {/* 方案 1: 左半屏 */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSnapMenu(false);
+                        onApplySnap('left');
+                      }}
+                      className="group cursor-pointer rounded-lg border border-zinc-800 hover:border-blue-500 bg-zinc-900/80 p-1.5 transition-all flex flex-col items-center"
+                    >
+                      <div className="w-full h-8 flex space-x-1">
+                        <div className="w-1/2 h-full bg-blue-500/40 border border-blue-400/80 rounded group-hover:bg-blue-500/70 transition-colors" />
+                        <div className="w-1/2 h-full bg-zinc-800/80 rounded" />
+                      </div>
+                      <span className="text-[10px] text-zinc-400 group-hover:text-white mt-1">靠左半屏</span>
+                    </div>
+
+                    {/* 方案 2: 右半屏 */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowSnapMenu(false);
+                        onApplySnap('right');
+                      }}
+                      className="group cursor-pointer rounded-lg border border-zinc-800 hover:border-blue-500 bg-zinc-900/80 p-1.5 transition-all flex flex-col items-center"
+                    >
+                      <div className="w-full h-8 flex space-x-1">
+                        <div className="w-1/2 h-full bg-zinc-800/80 rounded" />
+                        <div className="w-1/2 h-full bg-blue-500/40 border border-blue-400/80 rounded group-hover:bg-blue-500/70 transition-colors" />
+                      </div>
+                      <span className="text-[10px] text-zinc-400 group-hover:text-white mt-1">靠右半屏</span>
+                    </div>
+                  </div>
+
+                  {/* 方案 3: 全屏最大化 */}
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSnapMenu(false);
+                      onApplySnap('maximize');
+                    }}
+                    className="mt-2 group cursor-pointer rounded-lg border border-zinc-800 hover:border-blue-500 bg-zinc-900/80 p-1.5 transition-all flex items-center space-x-2"
+                  >
+                    <div className="w-8 h-6 bg-blue-500/30 border border-blue-400/80 rounded group-hover:bg-blue-500/60 transition-colors shrink-0" />
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-medium text-zinc-300 group-hover:text-white">全屏最大化</span>
+                      <span className="text-[9px] text-zinc-500">占满整个工作区</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           <button
